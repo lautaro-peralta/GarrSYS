@@ -22,7 +22,7 @@ The Garrison System (TGS) es un sistema de ventas y gestion de recursos ambienta
 
 ### Modelo
 
-![Diagrama Entidad-Relación](https://drive.google.com/uc?export=view&id=1zPnTYVW3cMqZkNy1VmrHg9LbOjxpmWge)
+![Diagrama Entidad-Relación](https://private-user-images.githubusercontent.com/205333171/435422156-0a19fc9a-4a20-416b-ad70-2f0a516c9eea.png)
 
 ## Alcance Funcional
 

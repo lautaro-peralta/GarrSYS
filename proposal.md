@@ -1,6 +1,6 @@
 # Propuesta TP DSW
 
-## Grupo
+## Grupo Shelby
 
 ### Integrantes
 

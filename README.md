@@ -1,2 +1,4 @@
+# The Garrison System
+
 The Garrison System es un sistema para gestionar recursos y decisiones estratégicas, inspirado en la serie Peaky Blinders, aunque realmente podria funcionar para cualquier organización similar.
 ...

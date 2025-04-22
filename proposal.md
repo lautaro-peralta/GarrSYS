@@ -6,7 +6,7 @@
 
 - 53483 - Peralta, Lautaro Martín
 - 50215 - Delprato, Luca
-- 51665 - Splivola, Tomas
+- 51665 - Splivalo, Tomas
 
 ### Repositorios
 
@@ -28,28 +28,27 @@ The Garrison System (TGS) es un sistema de ventas y gestion de recursos ambienta
 
 ### Alcance Mínimo
 
-_Nota_: el siguiente es un ejemplo para un grupo de 3 integrantes para un sistema de hotel. El
+| Tipo de Funcionalidad | Descripción |
+|------------------------|-------------|
+| **CRUD Simple** | 1. CRUD Gestión de Productos<br>2. CRUD Gestión de Socios (Consejo Shelby)<br>3. CRUD Gestión de Distribuidores<br>4. CRUD Gestión de Clientes |
+| **CRUD Dependiente** | 1. CRUD Productos Ilegales/Legales {depende de} CRUD Productos<br>2. CRUD Zonas {depende de} CRUD Autoridades y Distribuidores |
+| **Listado + Detalle** | 1. Listado de ventas filtrado por fecha y zona: muestra monto, productos vendidos y distribuidor. → Detalle: productos, tipo (legal/ilegal), soborno si aplica.<br>2. Listado de decisiones estratégicas por socio: muestra descripción, estado, fechas. → Detalle: quién la tomó, qué temas incluye, qué ventas se revisaron. |
+| **CUU / Epic** | 1. Generar informe de venta con productos legales o ilegales asociados.<br>2. Calcular y asignar soborno a una autoridad si el producto es ilegal (en base al rango). |
 
-Regularidad:
-|Req|Detalle|
-|:-|:-|
-|CRUD simple|1. CRUD Gestion Productos<br>2. CRUD Gestion RRHH<br>3. CRUD Gestion de Rutas|
-|CRUD dependiente|1. CRUD Habitación {depende de} CRUD Tipo Habitacion<br>2. CRUD Cliente {depende de} CRUD Localidad|
-|Listado<br>+<br>detalle| 1. Listado de habitaciones filtrado por tipo de habitación, muestra nro y tipo de habitación => detalle CRUD Habitacion<br> 2. Listado de reservas filtrado por rango de fecha, muestra nro de habitación, fecha inicio y fin estadía, estado y nombre del cliente => detalle muestra datos completos de la reserva y del cliente|
-|CUU/Epic|1. Reservar una habitación para la estadía<br>2. Realizar el check-in de una reserva|
+---
 
-Adicionales para Aprobación
-|Req|Detalle|
-|:-|:-|
-|CRUD |1. CRUD Tipo Habitacion<br>2. CRUD Servicio<br>3. CRUD Localidad<br>4. CRUD Provincia<br>5. CRUD Habitación<br>6. CRUD Empleado<br>7. CRUD Cliente|
-|CUU/Epic|1. Reservar una habitación para la estadía<br>2. Realizar el check-in de una reserva<br>3. Realizar el check-out y facturación de estadía y servicios|
+### Alcance Adicional para Aprobación
+
+| Tipo de Funcionalidad | Descripción |
+|------------------------|-------------|
+| **CRUD** | - CRUD Gestión de Autoridades<br>- CRUD Gestión de Administradores<br>- CRUD Gestión de Temas de Decisión<br>- CRUD Gestión de Zona y asociación con Distribuidores y Autoridades<br>- CRUD Asociación de Productos a Distribuidores |
+| **CUU / Epic** | - Asociar una decisión estratégica a una venta.<br>- Registrar una intervención entre socios, administradores y autoridades por productos ilegales. |
+
+---
 
 ### Alcance Adicional Voluntario
 
-_Nota_: El Alcance Adicional Voluntario es opcional, pero ayuda a que la funcionalidad del sistema esté completa y será considerado en la nota en función de su complejidad y esfuerzo.
-
-| Req      | Detalle                                                                                                                                                                                                             |
-| :------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Listados | 1. Estadía del día filtrado por fecha muestra, cliente, habitaciones y estado <br>2. Reservas filtradas por cliente muestra datos del cliente y de cada reserve fechas, estado cantidad de habitaciones y huespedes |
-| CUU/Epic | 1. Consumir servicios<br>2. Cancelación de reserva                                                                                                                                                                  |
-| Otros    | 1. Envío de recordatorio de reserva por email                                                                                                                                                                       |
+| Tipo de Funcionalidad | Descripción |
+|------------------------|-------------|
+| **Listado** | - Listado de productos ilegales por zona y autoridad involucrada (incluye monto de soborno) |
+| **CUU / Epic** | - Generar informe mensual de ventas y sobornos asociados.<br>- Registrar acciones del Consejo Shelby frente a incidentes de intervención policial. |

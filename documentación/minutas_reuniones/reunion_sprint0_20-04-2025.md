@@ -48,8 +48,8 @@
 
 ## ❗ Temas tratados / decisiones importantes
 
-- [ ] Roles en la gestión del proyecto y formatos para mejorar la coordinación y organizarnos.
-- [ ] Asignación de primeras tareas y duración de los sprints (7 a 15 días)
+-  Roles en la gestión del proyecto y formatos para mejorar la coordinación y organizarnos.
+-  Asignación de primeras tareas y duración de los sprints (7 a 15 días)
 
 ---
 

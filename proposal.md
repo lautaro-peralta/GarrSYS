@@ -12,7 +12,6 @@
 
 - [frontend app](http://hyperlinkToGihubOrGitlab)
 - [backend app](http://hyperlinkToGihubOrGitlab)
-  _Nota_: si utiliza un monorepo indicar un solo link con fullstack app.
 
 ## The Garrison System
 
@@ -30,10 +29,10 @@ The Garrison System (TGS) es un sistema de ventas y gestion de recursos ambienta
 
 | Tipo de Funcionalidad | Descripción |
 |------------------------|-------------|
-| **CRUD Simple** | 1. CRUD Gestión de Productos<br>2. CRUD Gestión de Socios (Consejo Shelby)<br>3. CRUD Gestión de Distribuidores<br>4. CRUD Gestión de Clientes |
-| **CRUD Dependiente** | 1. CRUD Productos Ilegales/Legales {depende de} CRUD Productos<br>2. CRUD Zonas {depende de} CRUD Autoridades y Distribuidores |
-| **Listado + Detalle** | 1. Listado de ventas filtrado por fecha y zona: muestra monto, productos vendidos y distribuidor. → Detalle: productos, tipo (legal/ilegal), soborno si aplica.<br>2. Listado de decisiones estratégicas por socio: muestra descripción, estado, fechas. → Detalle: quién la tomó, qué temas incluye, qué ventas se revisaron. |
-| **CUU / Epic** | 1. Generar informe de venta con productos legales o ilegales asociados.<br>2. Calcular y asignar soborno a una autoridad si el producto es ilegal (en base al rango). |
+| *CRUD Simple* | 1. CRUD Gestión de Productos<br>2. CRUD Gestión de Clientes<br>3. CRUD Gestión de Ventas|
+| *CRUD Dependiente* | 1. CRUD Productos Ilegales {depende de} CRUD Gestión de Productos<br> 2. CRUD Productos Legales {depende de} CRUD Gestión de Productos |
+| *Listado + Detalle* | 1. Listado de ventas filtrado por fecha y zona: muestra monto, productos vendidos y distribuidor. → Detalle: productos, tipo (legal/ilegal), soborno si aplica.<br>2. Listado de decisiones estratégicas por socio: muestra descripción, estado, fechas. → Detalle: quién la tomó, qué temas incluye, qué ventas se revisaron. |
+| *CUU / Epic* | 1. Generar informe de venta con productos legales o ilegales asociados.<br>2. Generar registro de compras y una consulta de historial por cliente. |
 
 ---
 
@@ -41,14 +40,13 @@ The Garrison System (TGS) es un sistema de ventas y gestion de recursos ambienta
 
 | Tipo de Funcionalidad | Descripción |
 |------------------------|-------------|
-| **CRUD** | - CRUD Gestión de Autoridades<br>- CRUD Gestión de Administradores<br>- CRUD Gestión de Temas de Decisión<br>- CRUD Gestión de Zona y asociación con Distribuidores y Autoridades<br>- CRUD Asociación de Productos a Distribuidores |
-| **CUU / Epic** | - Asociar una decisión estratégica a una venta.<br>- Registrar una intervención entre socios, administradores y autoridades por productos ilegales. |
-
+| *CRUD* | - CRUD Gestión de Socios<br>- CRUD Gestión de Administradores<br>- CRUD Decisiones Estrategicas<br>- CRUD Gestión de Zonas<br>- CRUD Gestion de Distribuidores {depende de} CRUD Zonas<br>- CRUD Gestion de Autoridades {depende de} CRUD Zonas|
+| *CUU / Epic* | - Asociar una decisión estratégica a una venta.<br>- Registrar una compra de productos ilegales.<br>- Registrar acuerdos clandestinos entre sociedad y autoridad.|
 ---
 
 ### Alcance Adicional Voluntario
 
 | Tipo de Funcionalidad | Descripción |
 |------------------------|-------------|
-| **Listado** | - Listado de productos ilegales por zona y autoridad involucrada (incluye monto de soborno) |
-| **CUU / Epic** | - Generar informe mensual de ventas y sobornos asociados.<br>- Registrar acciones del Consejo Shelby frente a incidentes de intervención policial. |
+| *Listado* | - Listado de productos ilegales por zona y autoridad involucrada (incluye monto de soborno) |
+| *CUU / Epic* | - Generar informe mensual de ventas y sobornos asociados.<br>- Registrar acciones del Consejo Shelby frente a incidentes de intervención policial. |

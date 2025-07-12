@@ -29,7 +29,7 @@ The Garrison System (TGS) es un sistema de ventas y gestion de recursos ambienta
 
 | Tipo de Funcionalidad | Descripción |
 |------------------------|-------------|
-| *CRUD Simple* | 1. CRUD Gestión de Productos<br>2. CRUD Gestión de Clientes<br>3. CRUD Gestión de Ventas|
+| *CRUD Simple* | 1. CRUD Gestión de Productos<br>2. CRUD Gestión de Clientes<br>3. CRUD Gestión de Zonas|
 | *CRUD Dependiente* | 1. CRUD Productos Ilegales {depende de} CRUD Gestión de Productos<br> 2. CRUD Productos Legales {depende de} CRUD Gestión de Productos |
 | *Listado + Detalle* | 1. Listado de ventas filtrado por fecha y zona: muestra monto, productos vendidos y distribuidor. → Detalle: productos, tipo (legal/ilegal), soborno si aplica.<br>2. Listado de decisiones estratégicas por socio: muestra descripción, estado, fechas. → Detalle: quién la tomó, qué temas incluye, qué ventas se revisaron. |
 | *CUU / Epic* | 1. Generar informe de venta con productos legales o ilegales asociados.<br>2. Generar registro de compras y una consulta de historial por cliente. |
@@ -40,7 +40,7 @@ The Garrison System (TGS) es un sistema de ventas y gestion de recursos ambienta
 
 | Tipo de Funcionalidad | Descripción |
 |------------------------|-------------|
-| *CRUD* | - CRUD Gestión de Socios<br>- CRUD Gestión de Administradores<br>- CRUD Decisiones Estrategicas<br>- CRUD Gestión de Zonas<br>- CRUD Gestion de Distribuidores {depende de} CRUD Zonas<br>- CRUD Gestion de Autoridades {depende de} CRUD Zonas|
+| *CRUD* | - CRUD Gestión de Socios<br>- CRUD Gestión de Administradores<br>- CRUD Decisiones Estrategicas<br>- CRUD Gestión de Ventas<br>- CRUD Gestion de Distribuidores {depende de} CRUD Zonas<br>- CRUD Gestion de Autoridades {depende de} CRUD Zonas|
 | *CUU / Epic* | - Asociar una decisión estratégica a una venta.<br>- Registrar una compra de productos ilegales.<br>- Registrar acuerdos clandestinos entre sociedad y autoridad.|
 ---
 

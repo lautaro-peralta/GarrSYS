@@ -1,20 +1,24 @@
 {
-  "name": "node",
+  "name": "proyecto_t_g_s",
+  "type": "module",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "",
+  "main": "app.js",
   "scripts": {
-    "dev": "nodemon ./src/index.js"
+    "build": "tsc -p ./tsconfig.json",
+    "start:dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/app.js\""
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "express": "^5.1.0",
-    "morgan": "^1.10.0",
-    "mysql": "^2.18.1",
-    "nodemon": "^3.1.10"
-  },
+  "packageManager": "pnpm@10.8.0",
   "devDependencies": {
-    "dotenv": "^17.2.0"
+    "@types/express": "5.0.3",
+    "@types/node": "^24.0.13",
+    "tsc-watch": "6.0.4",
+    "typescript": "5.1.3"
+  },
+  "dependencies": {
+    "express": "5.1.0"
   }
 }

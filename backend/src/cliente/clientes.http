@@ -2,7 +2,8 @@
 GET http://localhost:3000/api/clientes
 
 ###obtener un cliente
-GET http://localhost:3000/api/clientes/10
+GET http://localhost:3000/api/clientes/1
+
 
 ### Crear nuevo cliente
 POST http://localhost:3000/api/clientes/

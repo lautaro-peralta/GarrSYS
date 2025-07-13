@@ -12,7 +12,7 @@ const clientes =[
   ),
 ]
 
-export class clienteRepository implements Repository<Cliente>{
+export class ClienteRepository implements Repository<Cliente>{
   public findAll(): Cliente[] | undefined {
     return clientes
   }
@@ -26,7 +26,6 @@ export class clienteRepository implements Repository<Cliente>{
     return item
   }
 
-
   //puede recibir el id por separado tambien, cambiar en Repository
   public update(item: Cliente): Cliente | undefined {
     const clienteIdx = clientes.findIndex(cliente=> cliente.id===item.id)
@@ -39,16 +38,10 @@ export class clienteRepository implements Repository<Cliente>{
 
   public delete(item: { id: string; }): Cliente | undefined {
     const clienteIdx = clientes.findIndex(cliente=> cliente.id===item.id)
-  if(clienteIdx!==-1){
-    const deletedClientes = clientes[clienteIdx]
-    clientes.splice(clienteIdx,1)
-    return deletedClientes
+   if(clienteIdx!==-1){
+      const deletedClientes = clientes[clienteIdx]
+      clientes.splice(clienteIdx,1)
+      return deletedClientes
+    } 
   }
-  
-  
-  
-  }
-
-
-
 }

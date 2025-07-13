@@ -2,7 +2,7 @@ import { Cliente } from "./cliente.entity.js";
 const clientes = [
     new Cliente('10', 'Pedro', 'San Luis 1530', 'Ninguna compra aún', '03412223334', 'pedro@gmail.com'),
 ];
-export class clienteRepository {
+export class ClienteRepository {
     findAll() {
         return clientes;
     }

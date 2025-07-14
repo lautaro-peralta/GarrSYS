@@ -2,7 +2,7 @@
 GET http://localhost:3000/api/clientes
 
 ###obtener un cliente
-GET http://localhost:3000/api/clientes/1
+GET http://localhost:3000/api/clientes/2
 
 
 ### Crear nuevo cliente
@@ -24,7 +24,7 @@ PUT http://localhost:3000/api/clientes/2
 Content-Type: application/json
 
 {
-  "id": 2,
+  "id":"10",
   "nombre":"Fernanda",
   "direccion":"Cochabamba 230",
   "regCompras":"3 paquetes de galletitas",

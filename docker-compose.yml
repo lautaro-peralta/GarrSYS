@@ -1,0 +1,12 @@
+version: '4.43.1'
+services:
+  mongo:
+    image: percona/percona-server-mongodb:latest
+    container_name: percona-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=secretpassword

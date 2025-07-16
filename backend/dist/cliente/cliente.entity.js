@@ -1,12 +1,18 @@
 export class Cliente {
-    constructor(id, nombre, direccion, regCompras, tel, correo, _id) {
+    constructor(id, //UUID
+    nombre, email, direccion, telefono, regCompras) {
         this.id = id;
         this.nombre = nombre;
+        this.email = email;
         this.direccion = direccion;
+        this.telefono = telefono;
         this.regCompras = regCompras;
-        this.tel = tel;
-        this.correo = correo;
-        this._id = _id;
+    }
+    static fromDbRow(row) {
+        return new Cliente(row.id, //UUID
+        row.nombre, row.email || undefined, // Mapeo de DB email
+        row.direccion || undefined, row.telefono || undefined, // Mapeo de DB telefono
+        row.regCompras || undefined);
     }
 }
 //# sourceMappingURL=cliente.entity.js.map

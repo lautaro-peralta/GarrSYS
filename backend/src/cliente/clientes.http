@@ -2,7 +2,7 @@
 GET http://localhost:3000/api/clientes
 
 ###obtener un cliente
-GET http://localhost:3000/api/clientes/2
+GET http://localhost:3000/api/clientes/5d6001c8-9ab2-4701-b5bc-070a0b1960aa
 
 
 ### Crear nuevo cliente
@@ -10,35 +10,33 @@ POST http://localhost:3000/api/clientes/
 Content-Type: application/json
 
 {
-  "id": 2,
-  "nombre":"Fernanda",
-  "direccion":"Cochabamba 230",
-  "regCompras":"2 paquetes de galletitas",
-  "tel": "03402555777",
-  "correo":"fer@gmail.com"
+  "nombre": "Laura Fernandez",
+  "email": "l.fernandez@example.com",
+  "direccion": "Mendoza 2060, Rosario, Santa Fe",
+  "telefono": "3415222111",
+  "regCompras": "Celular - 20/07/2025"
 }
 
 
+
 ###modificar nuevo cliente (PUT - idempotente, modificaciones completas)
-PUT http://localhost:3000/api/clientes/2
+PUT http://localhost:3000/api/clientes/68768f03946d163d69a254c0
 Content-Type: application/json
 
 {
-  "id":"10",
-  "nombre":"Fernanda",
-  "direccion":"Cochabamba 230",
-  "regCompras":"3 paquetes de galletitas",
-  "tel": "03402555778",
-  "correo":"fer@gmail.com"
+  "nombre":"Pedro",
+  "direccion":"San Luis 1520",
+  "regCompras":"3 kg de vacío",
+  "tel": "03419990000",
+  "correo":"pedro@gmail.com"
 }
 
 
 ###modificar nuevo cliente (PATCH - no necesariamente idempotente, modificaciones parciales)
-PATCH http://localhost:3000/api/clientes/2
+PATCH http://localhost:3000/api/clientes/68768f21946d163d69a254c2
 Content-Type: application/json
 
 {
-  "id": 2,
   "nombre":"Fernanda",
   "direccion":"Cochabamba 230",
   "regCompras":"3 paquetes de galletitas",
@@ -47,4 +45,4 @@ Content-Type: application/json
 }
 
 ###borrar un cliente
-DELETE http://localhost:3000/api/clientes/2
+DELETE http://localhost:3000/api/clientes/68768f22946d163d69a254c3

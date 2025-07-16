@@ -1,12 +1,13 @@
-version: '4.43.1'
 services:
-  mongo:
-    image: percona/percona-server-mongodb:latest
-    container_name: percona-mongo
+  mysql:
+    image: percona/percona-server:8.0
+    container_name: ps8-dsw-tgs
     ports:
-      - "27017:27017"
-    volumes:
-      - ./mongo-data:/data/db
+      - "3307:3306"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=secretpassword
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: tpdesarrollo
+      MYSQL_USER: dsw
+      MYSQL_PASSWORD: dsw
+    volumes:
+      - ../mysql-data:/var/lib/mysql

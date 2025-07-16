@@ -1,76 +1,103 @@
 import { Cliente } from "./cliente.entity.js";
-const clientes = [
-    new Cliente('10', 'Pedro', 'San Luis 1530', 'Ninguna compra aún', '03412223334', 'pedro@gmail.com'),
-];
+import { pool } from "../shared/db/conn.mysql.js";
+import { v4 as uuidv4 } from 'uuid';
 export class ClienteRepository {
+    mapDbToEntity(row) {
+        return Cliente.fromDbRow(row);
+    }
     async findAll() {
-        return await clientes;
-    }
-    async findOne(item) {
-        return await clientes.find((cliente) => cliente.id === item.id);
-    }
-    async add(item) {
-        await clientes.push(item);
-        return item;
-    }
-    //puede recibir el id por separado tambien, cambiar en Repository
-    async update(item) {
-        const clienteIdx = await clientes.findIndex(cliente => cliente.id === item.id);
-        if (clienteIdx !== -1) {
-            Object.assign(clientes[clienteIdx], item);
+        try {
+            const [rows] = await pool.query('SELECT * FROM clientes');
+            return rows.map(row => this.mapDbToEntity(row));
         }
-        return clientes[clienteIdx];
+        catch (error) {
+            console.error('Error en findAll:', error);
+            throw new Error('No se pudieron obtener los clientes');
+        }
     }
-    async delete(item) {
-        const clienteIdx = await clientes.findIndex(cliente => cliente.id === item.id);
-        if (clienteIdx !== -1) {
-            const deletedClientes = clientes[clienteIdx];
-            clientes.splice(clienteIdx, 1);
-            return deletedClientes;
+    async findOne(id) {
+        try {
+            const [rows] = await pool.query('SELECT * FROM clientes WHERE id = ?', [id]);
+            if (!rows[0]) {
+                throw new Error(`Cliente con ID ${id} no encontrado`);
+            }
+            return this.mapDbToEntity(rows[0]);
+        }
+        catch (error) {
+            if (error instanceof Error && error.message.includes('no encontrado')) {
+                console.log(error.message);
+                throw error;
+            }
+            console.error(`Error al buscar cliente con ID ${id}:`, error);
+            throw new Error('Error al buscar el cliente');
+        }
+    }
+    async add(clienteInput) {
+        try {
+            const id = uuidv4(); // Genero el UUID en Node.js
+            console.log('clienteInput recibido en add:', clienteInput);
+            await pool.query(`INSERT INTO clientes (id, nombre, email, direccion, telefono, regCompras)
+             VALUES (?, ?, ?, ?, ?, ?)`, [
+                id,
+                clienteInput.nombre,
+                clienteInput.email || null,
+                clienteInput.direccion || null,
+                clienteInput.telefono || null,
+                clienteInput.regCompras || null
+            ]);
+            const [rows] = await pool.query('SELECT * FROM clientes WHERE id = ?', [id]);
+            if (!rows[0]) {
+                throw new Error('No se pudo recuperar el cliente después de crearlo');
+            }
+            return this.mapDbToEntity(rows[0]);
+        }
+        catch (error) {
+            console.error('Error en add:', error);
+            throw new Error('No se pudo agregar el cliente');
+        }
+    }
+    async update(id, clienteData) {
+        try {
+            const current = await this.findOne(id);
+            const updated = {
+                ...current,
+                ...clienteData
+            };
+            await pool.query(`UPDATE clientes SET 
+          nombre = ?, 
+          email = ?, 
+          direccion = ?, 
+          telefono = ?,
+          regCompras = ?
+         WHERE id = ?`, [
+                updated.nombre,
+                updated.email || null,
+                updated.direccion || null,
+                updated.telefono || null,
+                updated.regCompras || null,
+                id
+            ]);
+            const [rows] = await pool.query('SELECT * FROM clientes WHERE id = ?', [id]);
+            if (!rows[0]) {
+                throw new Error('No se pudo recuperar el cliente después de actualizar');
+            }
+            return this.mapDbToEntity(rows[0]);
+        }
+        catch (error) {
+            console.error(`Error al actualizar cliente con ID ${id}:`, error);
+            throw new Error('No se pudo actualizar el cliente');
+        }
+    }
+    async delete(id) {
+        try {
+            const cliente = await this.findOne(id);
+            await pool.query('DELETE FROM clientes WHERE id = ?', [id]);
+            return cliente;
+        }
+        catch (error) {
+            console.error(`Error al eliminar cliente con ID ${id}:`, error);
+            throw new Error('No se pudo eliminar el cliente');
         }
     }
 }
-/*export class ClienteRepository implements Repository<Cliente> {
-  public async findAll(): Promise<Cliente[]> {
-    return clientes;
-  }
-
-  public async findOne(item: { id: string }): Promise<Cliente | undefined> {
-    return clientes.find((cliente) => cliente.id.trim() === item.id.trim());
-  }
-
-  public async add(item: Cliente): Promise<Cliente> {
-    const existente = clientes.find((c) => c.id.trim() === item.id.trim());
-    if (existente) {
-      throw new Error("Ya existe un cliente con ese ID");
-    }
-
-    clientes.push(item);
-    return item;
-  }
-
-  public async update(item: Cliente): Promise<Cliente | undefined> {
-    const idx = clientes.findIndex((c) => c.id.trim() === item.id.trim());
-
-    if (idx !== -1) {
-      Object.assign(clientes[idx], item);
-      return clientes[idx];
-    }
-
-    return undefined;
-  }
-
-  public async delete(item: { id: string }): Promise<Cliente | undefined> {
-    const idx = clientes.findIndex((c) => c.id.trim() === item.id.trim());
-
-    if (idx !== -1) {
-      const eliminado = clientes[idx];
-      clientes.splice(idx, 1);
-      return eliminado;
-    }
-
-    return undefined;
-  }
-}
-*/ 
 //# sourceMappingURL=cliente.repository.js.map

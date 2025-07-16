@@ -2,13 +2,13 @@ import { Request,Response, NextFunction } from "express"
 import { ClienteRepository } from "./cliente.repository.js"
 import { Cliente } from "./cliente.entity.js"
 
+
 const repository = new ClienteRepository()
 
 function sanitizarInputCliente(req:Request, res:Response,next:NextFunction){
   const body = req.body;
 
   const clienteSanitizado = {
-    id: req.params.id?.toString().trim() || body.id?.toString().trim(),
     nombre: typeof body.nombre === "string" ? body.nombre.trim() : undefined,
     direccion: typeof body.direccion === "string" ? body.direccion.trim() : undefined,
     regCompras: typeof body.regCompras === "string" ? body.regCompras.trim() : undefined,
@@ -24,52 +24,45 @@ function sanitizarInputCliente(req:Request, res:Response,next:NextFunction){
   });
 
   req.body.clienteSanitizado = clienteSanitizado;
-
-/*req.body.clienteSanitizado = {
-    id: req.body.id,
-    nombre:req.body.nombre,
-    direccion: req.body.direccion,
-    regCompras: req.body.regCompras,
-    tel:req.body.tel,
-    correo:req.body.correo
-  }
-  //más validaciones acá
-  
-  Object.keys(req.body.clienteSanitizado).forEach(key => {
-    if(req.body.clienteSanitizado[key]===undefined){
-      delete req.body.clienteSanitizado[key]
-    }
-  })
-  */
   
   next();
   
 }
 
-async function findAll(req:Request,res:Response){
-  res.json({ data: await repository.findAll() })
-}
-
-async function findOne(req:Request, res:Response){
-  const id = req.params.id.trim();
-  const cliente = await repository.findOne({ id }); 
-  if (!cliente) {
-    return res.status(404).send({ message: 'Cliente no encontrado' })
+async function findAll(req: Request, res: Response) {
+  try {
+    const clientes = await repository.findAll();
+    res.status(200).json({ data: clientes });
+  } catch (err) {
+    res.status(500).json({ message: "Error al obtener clientes" });
   }
-  res.json({ data: cliente })
 }
 
-async function add(req:Request,res:Response){
+async function findOne(req: Request, res: Response) {
+  try {
+    const id = req.params.id.trim(); // ✅ id como string directamente
+    const cliente = await repository.findOne(id);
+    if (!cliente) {
+      return res.status(404).send({ message: "Cliente no encontrado" });
+    }
+    res.json({ data: cliente });
+  } catch (err) {
+    return res.status(400).send({ message: "Error al buscar cliente" });
+  }
+}
+
+async function add(req: Request, res: Response) {
   const input = req.body.clienteSanitizado;
 
   const inputCliente = new Cliente(
-    input.id,
-    input.nombre,
-    input.direccion,
-    input.regCompras,
-    input.tel,
-    input.correo
-  )
+  '',                // id vacío para que se genere en repo
+  input.nombre,      
+  input.email,
+  input.direccion,
+  input.telefono,
+  input.regCompras
+);
+
   try {
     const cliente = await repository.add(inputCliente);
     return res.status(201).send({ message: "Cliente creado", data: cliente });
@@ -78,33 +71,38 @@ async function add(req:Request,res:Response){
   }
 }
 
-async function update(req:Request,res:Response){
-  const input = req.body.clienteSanitizado;
-  input.id = req.params.id.trim();
-
-  const cliente = await repository.update(input);
-
-  if(!cliente){
-    return res.status(404).send({ message: 'Cliente no encontrado' })
-  }  
-  return res.status(200).send({ message: 'Cliente actualizado correctamente', data: cliente })
-}
-
-async function remove(req:Request,res:Response){
-  const id = req.params.id.trim();
-  const cliente = await repository.delete({ id });
-
-  if(!cliente){
-    return res.status(404).send({ message: 'Cliente no encontrado' })
+async function update(req: Request, res: Response) {
+  try {
+    const id = req.params.id.trim(); // ✅ string
+    const input = req.body.clienteSanitizado;
+    const cliente = await repository.update(id, input);
+    if (!cliente) {
+      return res.status(404).send({ message: "Cliente no encontrado" });
+    }
+    return res.status(200).send({ message: "Cliente actualizado correctamente", data: cliente });
+  } catch (err) {
+    return res.status(400).send({ message: "Error al actualizar cliente" });
   }
-  res.status(200).send({ message: 'Cliente eliminado exitosamente' }) 
 }
 
-export{
+async function remove(req: Request, res: Response) {
+  try {
+    const id = req.params.id.trim(); // ✅ string
+    const cliente = await repository.delete(id);
+    if (!cliente) {
+      return res.status(404).send({ message: "Cliente no encontrado" });
+    }
+    res.status(200).send({ message: "Cliente eliminado exitosamente" });
+  } catch (err) {
+    return res.status(400).send({ message: "Error al eliminar cliente" });
+  }
+}
+
+export {
   sanitizarInputCliente,
   findAll,
   findOne,
   add,
   update,
-  remove 
-}
+  remove,
+};

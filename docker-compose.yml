@@ -1,0 +1,13 @@
+services:
+  mysql:
+    image: percona/percona-server:8.0
+    container_name: ps8-dsw-tgs
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: tpdesarrollo
+      MYSQL_USER: dsw
+      MYSQL_PASSWORD: dsw
+    volumes:
+      - ../mysql-data:/var/lib/mysql

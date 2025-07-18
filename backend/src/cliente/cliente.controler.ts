@@ -1,22 +1,19 @@
 import { Request,Response, NextFunction } from "express"
-import { ClienteRepository } from "./cliente.repository.js"
+import { orm } from "../shared/db/orm.js"; 
 import { Cliente } from "./cliente.entity.js"
 
+const em =orm.em
 
-const repository = new ClienteRepository()
-
-function sanitizarInputCliente(req:Request, res:Response,next:NextFunction){
+function sanitizarInputCliente(req:Request, res:Response, next:NextFunction){
   const body = req.body;
 
   const clienteSanitizado = {
     nombre: typeof body.nombre === "string" ? body.nombre.trim() : undefined,
+    email: typeof body.email === "string" ? body.email.trim() : undefined,
     direccion: typeof body.direccion === "string" ? body.direccion.trim() : undefined,
-    regCompras: typeof body.regCompras === "string" ? body.regCompras.trim() : undefined,
-    tel: typeof body.tel === "string" ? body.tel.trim() : undefined,
-    correo: typeof body.correo === "string" ? body.correo.trim() : undefined,
+    telefono: typeof body.telefono === "string" ? body.telefono.trim() : undefined,
   };
 
-  // Elimina campos undefined
   Object.keys(clienteSanitizado).forEach((key) => {
     if (clienteSanitizado[key as keyof typeof clienteSanitizado] === undefined) {
       delete clienteSanitizado[key as keyof typeof clienteSanitizado];
@@ -24,29 +21,30 @@ function sanitizarInputCliente(req:Request, res:Response,next:NextFunction){
   });
 
   req.body.clienteSanitizado = clienteSanitizado;
-  
   next();
-  
 }
 
 async function findAll(req: Request, res: Response) {
   try {
-    const clientes = await repository.findAll();
-    res.status(200).json({ data: clientes });
+    const clientes = await em.find(Cliente, {}, { populate: ['regCompras'] });
+    const clientesDTO = clientes.map(cliente => cliente.toDTO());
+    res.status(200).json({ data: clientesDTO });
   } catch (err) {
+    console.error("Error OBTENIENDO clientes:", err); // 👈 Agregado
     res.status(500).json({ message: "Error al obtener clientes" });
   }
 }
 
 async function findOne(req: Request, res: Response) {
   try {
-    const id = req.params.id.trim(); // ✅ id como string directamente
-    const cliente = await repository.findOne(id);
+    const id = req.params.id.trim();
+    const cliente = await em.findOne(Cliente, id, { populate: ['regCompras'] });
     if (!cliente) {
       return res.status(404).send({ message: "Cliente no encontrado" });
     }
-    res.json({ data: cliente });
-  } catch (err) {
+
+    res.json({ data: cliente.toDTO() });
+  } catch (err:any) {
     return res.status(400).send({ message: "Error al buscar cliente" });
   }
 }
@@ -54,44 +52,87 @@ async function findOne(req: Request, res: Response) {
 async function add(req: Request, res: Response) {
   const input = req.body.clienteSanitizado;
 
-  const inputCliente = new Cliente(
-  '',                // id vacío para que se genere en repo
-  input.nombre,      
-  input.email,
-  input.direccion,
-  input.telefono,
-  input.regCompras
-);
-
   try {
-    const cliente = await repository.add(inputCliente);
-    return res.status(201).send({ message: "Cliente creado", data: cliente });
+    const cliente = em.create(Cliente,req.body.clienteSanitizado);
+
+    await orm.em.persistAndFlush(cliente);
+
+    return res.status(201).send({ message: "Cliente creado", data: cliente.toDTO() });
   } catch (err: any) {
     return res.status(400).send({ message: err.message || "Error al crear cliente" });
   }
 }
 
-async function update(req: Request, res: Response) {
+async function putUpdate(req: Request, res: Response) {
   try {
-    const id = req.params.id.trim(); // ✅ string
+    const id = req.params.id.trim();
     const input = req.body.clienteSanitizado;
-    const cliente = await repository.update(id, input);
-    if (!cliente) {
+
+    // Validar que todos los campos obligatorios estén presentes para un reemplazo completo
+    const camposObligatorios = ['nombre', 'email']; // define según tu modelo cuáles son obligatorios
+    for (const campo of camposObligatorios) {
+      if (!input[campo]) {
+        return res.status(400).send({ message: `Campo obligatorio faltante: ${campo}` });
+      }
+    }
+
+    const clienteToUpdate = await em.findOne(Cliente, { id }, { populate: ['regCompras'] });
+    if (!clienteToUpdate) {
       return res.status(404).send({ message: "Cliente no encontrado" });
     }
-    return res.status(200).send({ message: "Cliente actualizado correctamente", data: cliente });
-  } catch (err) {
-    return res.status(400).send({ message: "Error al actualizar cliente" });
+
+    // Aquí podemos asignar los campos que vienen y para los que no vienen, asignar undefined explícito
+    // para borrar valores no enviados (simula reemplazo total)
+    const camposCliente = ['nombre', 'email', 'direccion', 'telefono'];
+    const reemplazoCompleto: Partial<typeof input> = {};
+    for (const campo of camposCliente) {
+      reemplazoCompleto[campo] = input[campo] !== undefined ? input[campo] : undefined;
+    }
+
+    em.assign(clienteToUpdate, reemplazoCompleto);
+    await em.flush();
+
+    return res.status(200).send({ message: "Cliente actualizado correctamente (PUT)", data: clienteToUpdate.toDTO() });
+  } catch (err: any) {
+    console.error("Error en PUT actualizar cliente:", err);
+    return res.status(400).send({ message: err.message || "Error al actualizar cliente (PUT)" });
+  }
+}
+
+async function patchUpdate(req: Request, res: Response) {
+  try {
+    const id = req.params.id.trim();
+    const input = req.body.clienteSanitizado;
+
+    if (!input || Object.keys(input).length === 0) {
+      return res.status(400).send({ message: "No hay datos para actualizar" });
+    }
+
+    const clienteToUpdate = await em.findOne(Cliente, { id }, { populate: ['regCompras'] });
+    if (!clienteToUpdate) {
+      return res.status(404).send({ message: "Cliente no encontrado" });
+    }
+
+    em.assign(clienteToUpdate, input);
+    await em.flush();
+
+    return res.status(200).send({ message: "Cliente actualizado correctamente (PATCH)", data: clienteToUpdate.toDTO() });
+  } catch (err: any) {
+    console.error("Error en PATCH actualizar cliente:", err);
+    return res.status(400).send({ message: err.message || "Error al actualizar cliente (PATCH)" });
   }
 }
 
 async function remove(req: Request, res: Response) {
   try {
-    const id = req.params.id.trim(); // ✅ string
-    const cliente = await repository.delete(id);
+    const id = req.params.id.trim();
+    const cliente = await em.findOne(Cliente, id);
     if (!cliente) {
       return res.status(404).send({ message: "Cliente no encontrado" });
     }
+
+    await em.removeAndFlush(cliente);
+
     res.status(200).send({ message: "Cliente eliminado exitosamente" });
   } catch (err) {
     return res.status(400).send({ message: "Error al eliminar cliente" });
@@ -103,6 +144,7 @@ export {
   findAll,
   findOne,
   add,
-  update,
+  putUpdate,
+  patchUpdate,
   remove,
 };

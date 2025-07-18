@@ -1,6 +1,6 @@
-[submodule "backend"]
-	path = backend
-	url = https://github.com/Lau-prog/TGS-Backend.git
-[submodule "frontend"]
-	path = frontend
+[submodule "apps/frontend"]
+	path = apps/frontend
 	url = https://github.com/Tsplivalo/TGS-Frontend.git
+[submodule "apps/backend"]
+	path = apps/backend
+	url = https://github.com/Lau-prog/TGS-Backend.git

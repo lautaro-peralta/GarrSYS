@@ -1,4 +1,4 @@
 node_modules/
 # Base de datos persistente
 mysql-data/
-mongo-data/
+mongo-data/node_modules/

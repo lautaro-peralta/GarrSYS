@@ -1,4 +1,11 @@
 node_modules/
-# Base de datos persistente
+dist/
+coverage/
+.env
+.vscode/
+.history/
+.DS_Store
+Thumbs.db
+
 mysql-data/
 mongo-data/node_modules/

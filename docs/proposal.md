@@ -40,8 +40,8 @@ The Garrison System (TGS) es un sistema de ventas y gestion de recursos ambienta
 
 | Tipo de Funcionalidad | Descripción |
 |------------------------|-------------|
-| *CRUD* | - CRUD Gestión de Socios<br>- CRUD Gestión de Administradores<br>- CRUD Decisiones Estrategicas<br>- CRUD Gestión de Zonas<br>- CRUD Gestion de Distribuidores {depende de} CRUD Zonas<br>- CRUD Gestion de Autoridades {depende de} CRUD Zonas|
-| *CUU / Epic* | - Asociar una decisión estratégica a una venta.<br>- Registrar una compra de productos ilegales.<br>- Registrar acuerdos clandestinos entre sociedad y autoridad.|
+| *CRUD* | - CRUD Gestión de Socios<br>- CRUD Gestión de Administradores<br>- CRUD Decisiones Estrategicas<br>- CRUD Gestión de Zonas<br>- CRUD Gestion de Distribuidores {depende de} CRUD Zonas<br>- CRUD Gestion de Autoridades {depende de} CRUD Zonas<br>- CRUD Gestión de Sobornos Pendientes {depende de} CRUD Ventas y CRUD Autoridades|
+| *CUU / Epic* | - Asociar una decisión estratégica a una venta.<br>- Registrar una compra de productos ilegales.<br>- Registrar acuerdos clandestinos entre sociedad y autoridad.<br>- Registrar el pago de un soborno pendiente y actualizar su estado (pendiente/pagado).|
 ---
 
 ### Alcance Adicional Voluntario
@@ -49,4 +49,4 @@ The Garrison System (TGS) es un sistema de ventas y gestion de recursos ambienta
 | Tipo de Funcionalidad | Descripción |
 |------------------------|-------------|
 | *Listado* | - Listado de productos ilegales por zona y autoridad involucrada (incluye monto de soborno) |
-| *CUU / Epic* | - Generar informe mensual de ventas y sobornos asociados.<br>- Registrar acciones del Consejo Shelby frente a incidentes de intervención policial. |
+| *CUU / Epic* | - Generar informe mensual de ventas y sobornos asociados.<br>- Registrar acciones del Consejo Shelby frente a incidentes de intervención policial.<br>- Consultar historial de sobornos por venta, autoridad o zona.|

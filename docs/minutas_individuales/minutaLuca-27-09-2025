@@ -1,0 +1,139 @@
+Minuta individual
+
+Lautaro Peralta,
+Fecha: 27/09/25
+
+✅ CREACIÓN DE LA ENTIDAD SOCIO
+
+Se implementa la nueva entidad Socio en el sistema, con su correspondiente CRUD en el backend y definición inicial en el frontend. Esto habilita la gestión de socios y la vinculación futura con distribuidores, autoridades y clientes.
+
+📊 Controladores Actualizados
+✅ Controladores Completados
+
+SocioController – Gestión de socios (crear, listar, actualizar, cambiar estado)
+
+🚀 Nuevas Características Implementadas
+1. Entidad Socio (Backend)
+
+Definición de atributos:
+
+id
+
+name (requerido)
+
+email (validación de formato)
+
+phone (opcional)
+
+status (active | inactive)
+
+Validaciones con Zod en creación y actualización.
+
+Relaciones preparadas para 1:N con otras entidades (ej. clientes/ventas).
+
+Mensajes de feedback dinámicos:
+
+"Se encontró X socio"
+
+"Se encontraron X socios"
+
+2. Interfaz Partner (Frontend)
+export interface Partner {
+  id?: number;
+  name: string;
+  email?: string;
+  phone?: string;
+  status: 'active' | 'inactive';
+  linkedEntityIds?: number[];
+}
+
+
+Base para los servicios Angular que consumirán los endpoints del backend.
+
+Definición de tipado consistente entre front y back.
+
+3. Endpoints CRUD (Backend)
+
+POST /socios → Crear socio
+
+GET /socios → Listar socios (con búsqueda parcial por query)
+
+PATCH /socios/:id → Actualizar socio
+
+PATCH /socios/:id/status → Cambiar estado
+
+📈 Beneficios Logrados
+Para el Frontend
+
+✅ Tipado claro con la interfaz Partner
+
+✅ Base lista para servicios y vistas (listar/crear/editar socios)
+
+✅ Consistencia con entidades existentes
+
+Para el Backend
+
+✅ Validación con Zod de datos críticos
+
+✅ CRUD completo y estandarizado
+
+✅ Feedback coherente con otras entidades
+
+✅ Relaciones listas para futuras expansiones
+
+📋 Ejemplo de Respuesta
+Éxito
+{
+  "message": "Se encontraron 3 socios",
+  "data": [
+    { "id": 1, "name": "Juan Pérez", "status": "active" },
+    { "id": 2, "name": "María López", "status": "inactive" },
+    { "id": 3, "name": "Carlos Gómez", "status": "active" }
+  ]
+}
+
+Error de Validación
+{
+  "message": "Error de validación",
+  "errors": [
+    { "field": "name", "message": "El nombre es obligatorio" },
+    { "field": "email", "message": "El email es inválido" }
+  ]
+}
+
+🎯 Próximos Pasos
+
+Implementar servicios Angular (partner.service.ts).
+
+Crear vistas de listar, crear y editar socios.
+
+Integrar filtros de búsqueda y cambio de estado.
+
+Probar integración completa front-back.
+
+🏆 Impacto del Proyecto
+
+Se añade una nueva entidad clave al sistema.
+
+Consistencia total en validaciones y feedback.
+
+Base sólida para expandir relaciones con distribuidores y autoridades.
+
+📁 Archivos Creados/Modificados
+Nuevos
+
+src/modules/socio/socio.entity.ts
+
+src/modules/socio/socio.controller.ts
+
+src/modules/socio/socio.schema.ts
+
+Modificados
+
+src/app/interfaces/partner.ts (frontend)
+
+Pendiente
+
+Completar implementación en frontend (servicios y vistas).
+
+Testing de integración entre front y back.

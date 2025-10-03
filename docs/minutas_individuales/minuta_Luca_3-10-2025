@@ -1,0 +1,60 @@
+Cambios realizados
+
+Migración de módulo socio a partner
+
+Archivos renombrados:
+
+socio.routes.ts → partner.routes.ts
+
+socio.controller.ts → partner.controller.ts
+
+socio.schema.ts → partner.schema.ts
+
+socio.entity.ts → partner.entity.ts
+
+Controlador (PartnerController)
+
+Métodos renombrados a inglés:
+getAllPartners, searchPartners, getPartnerByDni, createPartner, updatePartner, deletePartner.
+
+Uso de ResponseUtils para uniformidad de respuestas.
+
+Mensajes de respuesta y validación en español.
+
+DTOs exponen claves en inglés (name, address, phone).
+
+Router (partner.routes.ts)
+
+Separación de endpoints:
+
+GET /partners → lista todo (sin query).
+
+GET /partners/search → búsqueda con filtros (?q=&status=).
+
+Convención: instancia partnerController con .bind(...).
+
+Relaciones (decisions, sales) comentadas y alineadas a las reglas de arquitectura.
+
+Schemas (partner.schema.ts)
+
+createPartnerSchema: todos los campos obligatorios.
+
+updatePartnerSchema: todos los campos opcionales (.partial()).
+
+Mensajes de validación en español.
+
+Entidad (partner.entity.ts)
+
+Renombrada a Partner.
+
+Table name → partners.
+
+DTOs en inglés con mapeo a props base en español.
+
+Relación 1:N con Distributor comentada (opcional).
+
+Archivo de pruebas HTTP (requests/partner.http)
+
+Incluye: getAll, search, getByDni, create, update (PATCH), delete.
+
+Endpoints separados como en el main.

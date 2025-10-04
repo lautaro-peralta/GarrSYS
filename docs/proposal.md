@@ -10,8 +10,8 @@
 
 ### Repositorios
 
-- [frontend app](http://hyperlinkToGihubOrGitlab)
-- [backend app](http://hyperlinkToGihubOrGitlab)
+- [frontend app](https://github.com/Tsplivalo/TGS-Frontend)
+- [backend app](https://github.com/Lau-prog/TGS-Backend)
 
 ## The Garrison System
 

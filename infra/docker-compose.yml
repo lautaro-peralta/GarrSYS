@@ -1,7 +1,11 @@
 services:
+  # ==========================================================================
+  # MySQL Database - Percona Server 8.0
+  # ==========================================================================
   mysql:
     image: percona/percona-server:8.0
     container_name: ps8-dsw-tgs
+    restart: unless-stopped
     ports:
       - "3307:3306"
     environment:
@@ -10,4 +14,52 @@ services:
       MYSQL_USER: dsw
       MYSQL_PASSWORD: dsw
     volumes:
-      - ../mysql-data:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
+    networks:
+      - tgs-network
+    # Health check - Verifica que MySQL esté respondiendo
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s      # Chequear cada 10 segundos
+      timeout: 5s        # Timeout después de 5 segundos
+      retries: 5         # Reintentar 5 veces antes de marcar como unhealthy
+      start_period: 30s  # Dar 30s de gracia al inicio
+
+  # ==========================================================================
+  # Redis Cache
+  # ==========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: redis-dsw-tgs
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - tgs-network
+    # Health check - Verifica que Redis esté respondiendo
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command: redis-server --appendonly yes
+
+# ==========================================================================
+# Networks
+# ==========================================================================
+networks:
+  tgs-network:
+    driver: bridge
+    name: tgs-network
+
+# ==========================================================================
+# Volumes
+# ==========================================================================
+volumes:
+  mysql-data:
+    name: tgs-mysql-data
+  redis-data:
+    name: tgs-redis-data

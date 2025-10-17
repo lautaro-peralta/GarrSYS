@@ -10,8 +10,19 @@
 
 ### Repositorios
 
-- [frontend app](https://github.com/Tsplivalo/TGS-Frontend)
-- [backend app](https://github.com/Lau-prog/TGS-Backend)
+- **Frontend:** [Tsplivalo/TGS-Frontend](https://github.com/Tsplivalo/TGS-Frontend)
+- **Backend:** [lautaro-peralta/TGS-Backend](https://github.com/lautaro-peralta/TGS-Backend)
+- **Repositorio Principal:** [Lau-prog/TP-Desarrollo-de-Software](https://github.com/Lau-prog/TP-Desarrollo-de-Software)
+
+### Pull Requests
+
+#### Regularidad
+- **Backend PR:** [Pendiente - agregar link cuando esté listo]
+- **Frontend PR:** [Pendiente - agregar link cuando esté listo]
+
+#### Aprobación Directa
+- **Backend PR:** [Pendiente - agregar link cuando esté listo]
+- **Frontend PR:** [Pendiente - agregar link cuando esté listo]
 
 ## The Garrison System
 

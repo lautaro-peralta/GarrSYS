@@ -12,13 +12,23 @@ The Garrison System es un sistema de ventas y gestión de recursos ambientado en
 
 ## 📋 Contenidos
 
-- [Sobre este Proyecto](#sobre-este-proyecto)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Tecnologías](#-tecnologías)
-- [Instalación](#-instalación)
-- [Ejecución](#️-ejecución)
-- [Documentación](#-documentación)
-- [Equipo](#-equipo)
+- [The Garrison System (TGS)](#the-garrison-system-tgs)
+  - [📋 Contenidos](#-contenidos)
+  - [Sobre este Proyecto](#sobre-este-proyecto)
+  - [📦 Estructura del Proyecto](#-estructura-del-proyecto)
+  - [🧪 Tecnologías](#-tecnologías)
+  - [🚀 Instalación](#-instalación)
+    - [1. Clonar con submódulos](#1-clonar-con-submódulos)
+    - [2. Levantar infraestructura](#2-levantar-infraestructura)
+    - [3. Configurar Backend](#3-configurar-backend)
+    - [4. Configurar Frontend](#4-configurar-frontend)
+  - [▶️ Ejecución](#️-ejecución)
+  - [📄 Documentación](#-documentación)
+    - [Documentación del Proyecto](#documentación-del-proyecto)
+    - [Documentación de API](#documentación-de-api)
+    - [Más información](#más-información)
+  - [👥 Equipo](#-equipo)
+  - [🔗 Repositorios](#-repositorios)
 
 ---
 
@@ -162,7 +172,7 @@ Frontend disponible en `http://localhost:4200`
 
 | Nombre | Legajo | GitHub |
 |--------|--------|--------|
-| Peralta, Lautaro Martín | 53483 | [@Lau-prog](https://github.com/Lau-prog) |
+| Peralta, Lautaro Martín | 53483 | [@lautaro-peralta](https://github.com/lautaro-peralta) |
 | Delprato, Luca | 50215 | [@LucaDelpra](https://github.com/LucaDelpra) |
 | Splivalo, Tomas | 51665 | [@Tsplivalo](https://github.com/Tsplivalo) |
 
@@ -170,7 +180,7 @@ Frontend disponible en `http://localhost:4200`
 
 ## 🔗 Repositorios
 
-- **Principal:** [Lau-prog/TP-Desarrollo-de-Software](https://github.com/Lau-prog/TP-Desarrollo-de-Software)
+- **Principal:** [lautaro-peralta/TP-Desarrollo-de-Software](https://github.com/Lau-prog/TP-Desarrollo-de-Software)
 - **Backend:** [lautaro-peralta/TGS-Backend](https://github.com/lautaro-peralta/TGS-Backend)
 - **Frontend:** [Tsplivalo/TGS-Frontend](https://github.com/Tsplivalo/TGS-Frontend)
 

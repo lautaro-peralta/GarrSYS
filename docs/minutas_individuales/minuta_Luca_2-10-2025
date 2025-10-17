@@ -1,0 +1,55 @@
+Luca Delprato
+Fecha: 02/10/2025
+
+✅ Mejoras completadas en el Frontend 
+📄 Páginas estáticas creadas
+
+Sobre nosotros
+
+Componente standalone en src/app/pages/about/
+
+Archivos: about.ts, about.html, about.scss
+
+Contenido: misión, valores, equipo e hitos
+
+Estilos unificados con patrón stack, card, header, glass-dark
+
+Contáctanos
+
+Componente standalone en src/app/pages/contact/
+
+Archivos: contact.ts, contact.html, contact.scss
+
+Formulario con Reactive Forms, validaciones y mensajes inline de éxito/error
+
+Estilos adaptados al patrón común (form-grid, form-actions, btn, error)
+
+FAQs
+
+Componente standalone en src/app/pages/faqs/
+
+Archivos: faqs.ts, faqs.html, faqs.scss
+
+Implementación de acordeón plegable con .collapsible
+
+Estilos consistentes con resto del proyecto
+
+⚙️ Configuración de rutas
+
+Se actualizó app.routes.ts para agregar:
+
+/sobre-nosotros → AboutComponent
+
+/contactanos → ContactComponent
+
+/faqs → FaqsComponent
+
+Manteniendo el mismo formato que los módulos de gestión existentes.
+
+🖼️ Refactor y limpieza
+
+Se revisó page-header.component.ts → se eliminó código incorrecto de ToastService que estaba pegado allí.
+
+Se mantuvo page-header únicamente como header reutilizable.
+
+Se descartó el uso de ToastService global para simplificar (solo mensajes inline en formularios).

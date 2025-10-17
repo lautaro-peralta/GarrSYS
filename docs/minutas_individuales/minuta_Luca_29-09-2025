@@ -1,0 +1,58 @@
+Luca Delprato
+Fecha: 29/09/2025
+
+✅ Cambios realizados en el Frontend
+
+Modelos de autenticación
+
+Creación de interfaces para LoginRequest, RegisterRequest, User y AuthResponse.
+
+Servicio de autenticación
+
+Métodos para login, registro, manejo de sesión y logout.
+
+Persistencia de token y user en localStorage.
+
+Señales reactivas (signal/computed) para autenticación.
+
+Interceptor de token
+
+Se agregó el header Authorization: Bearer <token> a todas las requests.
+
+Guard de rutas
+
+Bloquea acceso a rutas privadas si no hay sesión iniciada.
+
+Redirige a /login.
+
+Componentes de autenticación (standalone)
+
+Formularios de Login y Registro con HTML/SCSS dedicados.
+
+Layout público
+
+Componente con submenú para invitados (Login/Registro).
+
+Rutas principales
+
+Rutas públicas (/login, /register).
+
+Rutas protegidas (/zonas, /clientes).
+
+Ruta por defecto y ** redirigen a login.
+
+App Shell
+
+Integración del AuthService y método logout disponible.
+
+🚀 Pendiente / Próximos pasos
+
+Instalar dependencias y correr el proyecto.
+
+Confirmar endpoints del backend para login y registro.
+
+Mejorar flujo post-login (redirigir según contexto).
+
+Definir secciones públicas adicionales.
+
+Implementar manejo de roles y expiración/refresh del token.

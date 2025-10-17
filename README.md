@@ -12,23 +12,14 @@ The Garrison System es un sistema de ventas y gestión de recursos ambientado en
 
 ## 📋 Contenidos
 
-- [The Garrison System (TGS)](#the-garrison-system-tgs)
-  - [📋 Contenidos](#-contenidos)
-  - [Sobre este Proyecto](#sobre-este-proyecto)
-  - [📦 Estructura del Proyecto](#-estructura-del-proyecto)
-  - [🧪 Tecnologías](#-tecnologías)
-  - [🚀 Instalación](#-instalación)
-    - [1. Clonar con submódulos](#1-clonar-con-submódulos)
-    - [2. Levantar infraestructura](#2-levantar-infraestructura)
-    - [3. Configurar Backend](#3-configurar-backend)
-    - [4. Configurar Frontend](#4-configurar-frontend)
-  - [▶️ Ejecución](#️-ejecución)
-  - [📄 Documentación](#-documentación)
-    - [Documentación del Proyecto](#documentación-del-proyecto)
-    - [Documentación de API](#documentación-de-api)
-    - [Más información](#más-información)
-  - [👥 Equipo](#-equipo)
-  - [🔗 Repositorios](#-repositorios)
+- [Sobre este Proyecto](#sobre-este-proyecto)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Tecnologías](#tecnologías)
+- [Instalación](#instalación)
+- [Ejecución](#ejecución)
+- [Cargar Datos de Prueba](#cargar-datos-de-prueba)
+- [Documentación](#documentación)
+- [Equipo](#equipo)
 
 ---
 
@@ -46,32 +37,24 @@ Trabajo Práctico de la materia **Desarrollo de Software** de la UTN FRRo. El pr
 
 ---
 
-## 📦 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 TP-Desarrollo-de-Software/
-│
 ├── apps/
-│   ├── backend/              → Submódulo: API REST (Node.js + TypeScript + MikroORM)
+│   ├── backend/              → Submódulo: API REST (Node.js + TypeScript)
 │   └── frontend/             → Submódulo: SPA (Angular + TypeScript)
-│
-├── docs/                     → Documentación del proyecto
-│   ├── minutas_individuales/ → Minutas de trabajo individual
-│   ├── minutas_reuniones/    → Minutas de reuniones grupales
-│   └── proposal.md           → Propuesta del proyecto (alcance funcional)
-│
 ├── infra/
-│   ├── docker-compose.yml    → Servicios: MySQL y Redis
-│   └── mysql-data/           → Volumen persistente de base de datos
-│
-├── .gitignore
-├── .gitmodules               → Configuración de submódulos
-└── README.md                 → Este archivo
+│   ├── docker-compose.yml    → MySQL y Redis
+│   └── init-test-data.sql    → Datos de prueba
+├── scripts/
+│   └── load-test-data.sh/.bat → Script para cargar datos
+└── Makefile                  → Comandos simplificados
 ```
 
 ---
 
-## 🧪 Tecnologías
+## Tecnologías
 
 **Backend:** Node.js 18+ | TypeScript | Express.js | MikroORM | MySQL 8.0 | Redis | JWT
 
@@ -81,92 +64,93 @@ TP-Desarrollo-de-Software/
 
 ---
 
-## 🚀 Instalación
+## Instalación
 
 **Requisitos:** Node.js 18+, pnpm, Docker, Git
 
-### 1. Clonar con submódulos
-
 ```bash
+# 1. Clonar con submódulos
 git clone --recurse-submodules https://github.com/Lau-prog/TP-Desarrollo-de-Software.git
 cd TP-Desarrollo-de-Software
-```
 
-Si ya clonaste sin submódulos: `git submodule update --init --recursive`
-
-### 2. Levantar infraestructura
-
-```bash
+# 2. Levantar Docker
 cd infra
 docker-compose up -d
-```
 
-Esto levanta MySQL (puerto 3307) y Redis (puerto 6379).
-
-### 3. Configurar Backend
-
-```bash
+# 3. Backend
 cd ../apps/backend
 pnpm install
 cp .env.example .env.development
-```
+# Editar .env.development con tus configuraciones
 
-Editá `.env.development` con tus configuraciones.
-
-### 4. Configurar Frontend
-
-```bash
-cd ../frontend
+# 4. Frontend
+cd ../apps/frontend
 pnpm install
 ```
 
 ---
 
-## ▶️ Ejecución
+## Ejecución
 
-**Backend** (Terminal 1):
+**Backend:**
 ```bash
 cd apps/backend
-pnpm dev        # Modo desarrollo (requiere Mailtrap configurado en .env)
-# o
-pnpm demo       # Modo demo (acepta cualquier código de verificación)
+pnpm dev    # Modo desarrollo (requiere Mailtrap)
+pnpm demo   # Modo demo (acepta cualquier código de verificación)
 ```
 
-> **Modo desarrollo:** Los emails se envían a [Mailtrap](https://mailtrap.io/). Para verificar funciones de email, el evaluador debe acceder a la bandeja de Mailtrap con las credenciales proporcionadas.
->
-> **Modo demo:** Ideal para evaluación académica. Acepta cualquier código de verificación sin necesidad de acceder a Mailtrap.
-
-Backend disponible en `http://localhost:3000`
-
-**Frontend** (Terminal 2):
+**Frontend:**
 ```bash
 cd apps/frontend
 pnpm start
 ```
 
-Frontend disponible en `http://localhost:4200`
+- Backend: http://localhost:3000
+- Frontend: http://localhost:4200
 
 ---
 
-## 📄 Documentación
+## Cargar Datos de Prueba
 
-### Documentación del Proyecto
-- **[Propuesta del Proyecto](docs/proposal.md)** - Alcance funcional, CRUDs y CUUs
-- **[Minutas de Reuniones](docs/minutas_reuniones/)** - Registro de avances grupales
-- **[Minutas Individuales](docs/minutas_individuales/)** - Registro de trabajo individual
+Después de levantar el backend por primera vez:
 
-### Documentación de API
-- **[Swagger/OpenAPI](docs/SWAGGER_SETUP.md)** - Documentación interactiva de la API
-- **Swagger UI:** http://localhost:3000/api-docs (con el backend corriendo)
-- **[Ejemplos de código](docs/swagger-examples/)** - Ejemplos de uso de la API
+**Opción 1 - Script automático:**
+```bash
+# Desde la raíz del proyecto
+bash scripts/load-test-data.sh    # Linux/Mac/Git Bash
+scripts\load-test-data.bat        # Windows
 
-### Más información
-- [README del Backend](apps/backend/README.md) - Arquitectura, endpoints, base de datos
-- [README del Frontend](apps/frontend/README.md) - Componentes, servicios, routing
+# O con Make:
+make load-data
+```
+
+**Opción 2 - Manual:**
+```bash
+cd apps/backend
+node scripts/seed-test-data.mjs
+```
+
+**Datos incluidos:** 5 zonas, 10 productos, 12 usuarios, 4 ventas, 3 sobornos.
+
+**Usuarios de prueba** (password: `password123`):
+- **ADMIN:** `thomas.shelby@shelbyltd.co.uk`
+- **PARTNERS:** `arthur.shelby@shelbyltd.co.uk`, `polly.gray@shelbyltd.co.uk`
+- **DISTRIBUTORS:** `john.shelby@shelbyltd.co.uk`, `michael.gray@shelbyltd.co.uk`, `isaiah.jesus@shelbyltd.co.uk`
+- **CLIENTS:** `alfie@solomonsltd.co.uk`, `johnny@example.com`, `aberama@goldltd.com`
+- **AUTHORITIES:** `campbell@birminghampd.gov.uk`, `moss@birminghampd.gov.uk`
 
 ---
 
-## 👥 Equipo
+## Documentación
+
+- **[Propuesta del Proyecto](docs/proposal.md)** - Alcance funcional
+- **[Swagger UI](http://localhost:3000/api-docs)** - Documentación API (con backend corriendo)
+- **[README Backend](apps/backend/README.md)** - Arquitectura y endpoints
+- **[README Frontend](apps/frontend/README.md)** - Componentes y servicios
+
+---
+
+## Equipo
 
 **Grupo Shelby - UTN FRRo**
 

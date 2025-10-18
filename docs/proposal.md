@@ -21,7 +21,7 @@
 The Garrison System (TGS) es un sistema de ventas y gestion de recursos ambientado en el Birmingham de los años 1920. Simula una red comercial con elementos de riesgo, corrupción y toma de decisiones estratégicas.
 
 ### Modelo
-https://drive.google.com/file/d/130SxUHBUgGtFwFRR_hgHGt1Po_tCTH32/view?usp=sharing
+![Diagrama Entidad–Relación - The Garrison](./The_Garrison_SYS-DER.png)
 
 ## Alcance Funcional
 

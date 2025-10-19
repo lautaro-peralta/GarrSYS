@@ -12,6 +12,7 @@ The Garrison System es un sistema de ventas y gestión de recursos ambientado en
 
 ## 📋 Contenidos
 
+- [Inicio Rápido](#-inicio-rápido)
 - [Sobre este Proyecto](#sobre-este-proyecto)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Tecnologías](#tecnologías)
@@ -19,7 +20,40 @@ The Garrison System es un sistema de ventas y gestión de recursos ambientado en
 - [Ejecución](#ejecución)
 - [Cargar Datos de Prueba](#cargar-datos-de-prueba)
 - [Documentación](#documentación)
+- [Troubleshooting](#troubleshooting)
 - [Equipo](#equipo)
+
+---
+
+## 🚀 Inicio Rápido
+
+**Configuración simplificada con Docker para la infraestructura:**
+
+```bash
+# 1. Clonar con submódulos
+git clone --recurse-submodules https://github.com/Lau-prog/TP-Desarrollo-de-Software.git
+cd TP-Desarrollo-de-Software
+
+# 2. Levantar infraestructura (MySQL + Redis) con Docker
+cd infra
+docker compose up -d
+
+# 3. Backend
+cd ../apps/backend
+pnpm install
+cp .env.example .env.development
+pnpm start:dev
+
+# 4. Frontend (en otra terminal)
+cd apps/frontend
+pnpm install
+pnpm start
+```
+
+**Acceder a:**
+- Frontend: http://localhost:4200
+- Backend API: http://localhost:3000
+- Swagger Docs: http://localhost:3000/api-docs
 
 ---
 
@@ -66,47 +100,165 @@ TP-Desarrollo-de-Software/
 
 ## Instalación
 
-**Requisitos:** Node.js 18+, pnpm, Docker, Git
+### Requisitos
+
+- **Node.js** >= 18
+- **pnpm** >= 9
+- **Docker** >= 24 y Docker Compose >= 2
+- **Git**
+
+### Pasos de Instalación
+
+#### 1. Clonar el repositorio con submódulos
 
 ```bash
-# 1. Clonar con submódulos
 git clone --recurse-submodules https://github.com/Lau-prog/TP-Desarrollo-de-Software.git
 cd TP-Desarrollo-de-Software
+```
 
-# 2. Levantar Docker
+#### 2. Levantar infraestructura (MySQL + Redis) con Docker
+
+```bash
 cd infra
-docker-compose up -d
+docker compose up -d
+```
 
-# 3. Backend
+Esto iniciará:
+- **MySQL** (Percona Server 8.0) en el puerto 3307
+- **Redis** 7 en el puerto 6379
+
+#### 3. Configurar el Backend
+
+```bash
 cd ../apps/backend
 pnpm install
 cp .env.example .env.development
-# Editar .env.development con tus configuraciones
+```
 
-# 4. Frontend
-cd ../apps/frontend
+Edita `.env.development` con las siguientes configuraciones importantes:
+
+```env
+# Database - Conexión a MySQL de Docker
+DB_HOST=localhost
+DB_PORT=3307
+DB_USER=dsw
+DB_PASSWORD=dsw
+DB_NAME=tpdesarrollo
+
+# Redis - Opcional pero recomendado
+REDIS_ENABLED=true
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# JWT Secret - Cambiar en producción
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+
+# Email - Configurar con tus credenciales de Mailtrap o SMTP
+SMTP_HOST=sandbox.smtp.mailtrap.io
+SMTP_PORT=2525
+SMTP_USER=tu-usuario
+SMTP_PASS=tu-password
+
+# Modo demo (sin verificación de email obligatoria)
+EMAIL_VERIFICATION_REQUIRED=false
+```
+
+#### 4. Configurar el Frontend
+
+```bash
+cd ../frontend
 pnpm install
 ```
+
+El frontend ya está configurado para hacer proxy al backend en `http://localhost:3000` mediante `proxy.conf.json`.
 
 ---
 
 ## Ejecución
 
-**Backend:**
+### Orden de Ejecución Recomendado
+
+#### 1. Verificar que la infraestructura Docker esté corriendo
+
 ```bash
-cd apps/backend
-pnpm dev    # Modo desarrollo (requiere Mailtrap)
-pnpm demo   # Modo demo (acepta cualquier código de verificación)
+cd infra
+docker compose ps
 ```
 
-**Frontend:**
+Deberías ver los servicios `mysql` y `redis` como "healthy" o "running".
+
+#### 2. Iniciar el Backend
+
+```bash
+cd apps/backend
+
+# Modo desarrollo (con verificación de email)
+pnpm start:dev
+
+# O modo demo (sin verificación de email obligatoria)
+pnpm start:demo
+```
+
+El backend estará disponible en:
+- **API**: http://localhost:3000
+- **Swagger Docs**: http://localhost:3000/api-docs
+- **Health Check**: http://localhost:3000/health
+
+#### 3. Iniciar el Frontend (en otra terminal)
+
 ```bash
 cd apps/frontend
 pnpm start
 ```
 
-- Backend: http://localhost:3000
-- Frontend: http://localhost:4200
+El frontend estará disponible en:
+- **App**: http://localhost:4200
+
+### Comandos Útiles
+
+#### Infraestructura Docker
+
+```bash
+# Ver logs de la infraestructura
+cd infra
+docker compose logs -f
+
+# Detener infraestructura
+docker compose down
+
+# Reiniciar infraestructura
+docker compose restart
+
+# Detener y eliminar datos (¡CUIDADO!)
+docker compose down -v
+```
+
+#### Backend
+
+```bash
+cd apps/backend
+
+# Ejecutar migraciones
+pnpm mikro-orm migration:up
+
+# Limpiar build
+pnpm clean
+
+# Type check
+pnpm type-check
+```
+
+#### Frontend
+
+```bash
+cd apps/frontend
+
+# Build para producción
+pnpm build
+
+# Run tests
+pnpm test
+```
 
 ---
 
@@ -167,6 +319,113 @@ node scripts/seed-test-data.mjs
 - **Principal:** [lautaro-peralta/TP-Desarrollo-de-Software](https://github.com/Lau-prog/TP-Desarrollo-de-Software)
 - **Backend:** [lautaro-peralta/TGS-Backend](https://github.com/lautaro-peralta/TGS-Backend)
 - **Frontend:** [Tsplivalo/TGS-Frontend](https://github.com/Tsplivalo/TGS-Frontend)
+
+---
+
+## Troubleshooting
+
+### Error: "Cannot connect to MySQL"
+
+**Problema**: El backend no puede conectarse a la base de datos.
+
+**Solución**:
+1. Verifica que Docker esté corriendo:
+   ```bash
+   docker compose ps
+   ```
+2. Verifica que el puerto 3307 esté libre:
+   ```bash
+   netstat -ano | findstr :3307  # Windows
+   lsof -i :3307                  # Linux/Mac
+   ```
+3. Revisa las credenciales en `.env.development`:
+   ```env
+   DB_HOST=localhost
+   DB_PORT=3307
+   DB_USER=dsw
+   DB_PASSWORD=dsw
+   DB_NAME=tpdesarrollo
+   ```
+
+### Error: "Redis connection failed"
+
+**Problema**: El backend no puede conectarse a Redis.
+
+**Solución**:
+1. Si Redis es opcional, desactívalo en `.env.development`:
+   ```env
+   REDIS_ENABLED=false
+   ```
+2. O verifica que Redis esté corriendo:
+   ```bash
+   docker compose ps redis
+   ```
+
+### Error: "Port 3000 already in use"
+
+**Problema**: El puerto del backend está ocupado.
+
+**Solución**:
+1. Encuentra el proceso que usa el puerto:
+   ```bash
+   netstat -ano | findstr :3000  # Windows
+   lsof -i :3000                  # Linux/Mac
+   ```
+2. Cierra ese proceso o cambia el puerto en `.env.development`:
+   ```env
+   PORT=3001
+   ```
+
+### Error: "Submódulos vacíos"
+
+**Problema**: Las carpetas `apps/backend` y `apps/frontend` están vacías.
+
+**Solución**:
+```bash
+git submodule update --init --recursive
+```
+
+### Error: "CORS policy" en el frontend
+
+**Problema**: El frontend no puede hacer requests al backend.
+
+**Solución**:
+1. Verifica que el backend esté corriendo en `http://localhost:3000`
+2. Verifica `proxy.conf.json` en el frontend
+3. Verifica la variable `ALLOWED_ORIGINS` en el backend:
+   ```env
+   ALLOWED_ORIGINS=http://localhost:4200
+   ```
+
+### La base de datos está vacía
+
+**Solución**: Carga los datos de prueba siguiendo la sección [Cargar Datos de Prueba](#cargar-datos-de-prueba).
+
+### Limpiar y empezar de nuevo
+
+Si tienes problemas persistentes:
+
+```bash
+# 1. Detener todo
+cd infra
+docker compose down -v
+
+# 2. Limpiar backend
+cd ../apps/backend
+rm -rf node_modules dist
+pnpm install
+
+# 3. Limpiar frontend
+cd ../frontend
+rm -rf node_modules .angular dist
+pnpm install
+
+# 4. Levantar infraestructura de nuevo
+cd ../../infra
+docker compose up -d
+
+# 5. Iniciar backend y frontend
+```
 
 ---
 

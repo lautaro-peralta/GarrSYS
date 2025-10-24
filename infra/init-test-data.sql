@@ -401,7 +401,7 @@ INSERT INTO topics (description) VALUES
 -- ============================================================================
 -- 14. STRATEGIC DECISIONS (Decisiones estratégicas)
 -- ============================================================================
-INSERT INTO strategic_decisions (description, "startDate", "endDate", topic_id) VALUES
+INSERT INTO strategic_decisions (description, start_date, end_date, topic_id) VALUES
 ('Establish presence in Camden Town through Alfie Solomons partnership', '2025-01-01', '2025-06-30', 1),
 ('Consolidate control over Small Heath betting operations', '2025-01-15', '2025-03-31', 2),
 ('Expand racing fix operations to Epsom Derby', '2025-02-01', '2025-05-15', 3),
@@ -414,7 +414,7 @@ INSERT INTO strategic_decisions (description, "startDate", "endDate", topic_id) 
 -- ============================================================================
 -- 15. CONSEJOS SHELBY (Shelby Council - Partner-Decision Aggregation)
 -- ============================================================================
-INSERT INTO consejos_shelby (partner_id, decision_id, "joinDate", role, notes) VALUES
+INSERT INTO consejos_shelby (partner_id, decision_id, join_date, role, notes) VALUES
 -- Decision 1: Camden Town expansion
 ('01936e9f-3000-7000-8000-000000000002', 1, '2025-01-01', 'Enforcement Lead', 'Arthur oversees security in Camden operations'),
 ('01936e9f-3000-7000-8000-000000000003', 1, '2025-01-01', 'Financial Officer', 'Polly manages financial arrangements'),
@@ -451,16 +451,16 @@ INSERT INTO consejos_shelby (partner_id, decision_id, "joinDate", role, notes) V
 -- ============================================================================
 -- 16. MONTHLY REVIEWS (Revisiones mensuales del consejo)
 -- ============================================================================
-INSERT INTO monthly_reviews (year, month, "reviewDate", status, observations, "totalSalesAmount", "totalSalesCount", recommendations, "reviewedBy_id") VALUES
-(2025, 1, '2025-02-05 10:00:00', 'APPROVED', 'Strong start to the year. Camden operations showing promise. Racing fix packages performing well.', 5235, 4, 'Continue monitoring Alfie Solomons partnership. Increase security for high-value shipments.', '01936e9f-3000-7000-8000-000000000003'),
-(2025, 2, '2025-03-05 10:00:00', 'IN_REVIEW', 'February shows significant growth in illegal merchandise. Weapons sales up 40%. Some concerns about authority attention.', 6210, 8, 'Review security protocols. Consider temporary reduction in weapons trade volume.', '01936e9f-3000-7000-8000-000000000002'),
-(2024, 12, '2025-01-10 14:00:00', 'COMPLETED', 'December performance exceeded expectations. Holiday season boosted legitimate alcohol sales.', 8450, 15, 'Expand legitimate operations in new year. Maintain current distributor network.', '01936e9f-3000-7000-8000-000000000003'),
-(2024, 11, '2024-12-08 10:00:00', 'APPROVED', 'Steady performance. No major incidents. Authority relations stable.', 4320, 10, 'Prepare for holiday season surge. Stock up on premium products.', '01936e9f-3000-7000-8000-000000000020');
+INSERT INTO monthly_reviews (year, month, review_date, status, observations, total_sales_amount, total_sales_count, recommendations, reviewed_by_id, created_at, updated_at) VALUES
+(2025, 1, '2025-02-05 10:00:00', 'APPROVED', 'Strong start to the year. Camden operations showing promise. Racing fix packages performing well.', 5235, 4, 'Continue monitoring Alfie Solomons partnership. Increase security for high-value shipments.', '01936e9f-3000-7000-8000-000000000003', NOW(), NOW()),
+(2025, 2, '2025-03-05 10:00:00', 'IN_REVIEW', 'February shows significant growth in illegal merchandise. Weapons sales up 40%. Some concerns about authority attention.', 6210, 8, 'Review security protocols. Consider temporary reduction in weapons trade volume.', '01936e9f-3000-7000-8000-000000000002', NOW(), NOW()),
+(2024, 12, '2025-01-10 14:00:00', 'COMPLETED', 'December performance exceeded expectations. Holiday season boosted legitimate alcohol sales.', 8450, 15, 'Expand legitimate operations in new year. Maintain current distributor network.', '01936e9f-3000-7000-8000-000000000003', NOW(), NOW()),
+(2024, 11, '2024-12-08 10:00:00', 'APPROVED', 'Steady performance. No major incidents. Authority relations stable.', 4320, 10, 'Prepare for holiday season surge. Stock up on premium products.', '01936e9f-3000-7000-8000-000000000020', NOW(), NOW());
 
 -- ============================================================================
 -- 17. CLANDESTINE AGREEMENTS (Acuerdos clandestinos)
 -- ============================================================================
-INSERT INTO clandestine_agreements ("shelbyCouncil_id", admin_id, authority_id, "agreementDate", description, status) VALUES
+INSERT INTO clandestine_agreements (shelby_council_id, admin_id, authority_id, agreement_date, description, status) VALUES
 -- Agreement 1: Council decision 1 (Camden expansion) + Thomas + Chief Campbell
 (1, '01936e9f-3000-7000-8000-000000000001', '01936e9f-3000-7000-8000-000000000010', '2025-01-05 23:00:00', 'Protection agreement for Camden operations. Monthly payment of £500. Campbell ensures no raids on designated routes.', 'ACTIVE'),
 

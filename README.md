@@ -34,7 +34,7 @@ The Garrison System es un sistema de ventas y gestión de recursos ambientado en
 git clone --recurse-submodules https://github.com/Lau-prog/TP-Desarrollo-de-Software.git
 cd TP-Desarrollo-de-Software
 
-# 2. Levantar infraestructura (MySQL + Redis) con Docker
+# 2. Levantar infraestructura (PostgreSQL + Redis) con Docker
 cd infra
 docker compose up -d
 
@@ -90,7 +90,7 @@ TP-Desarrollo-de-Software/
 
 ## Tecnologías
 
-**Backend:** Node.js 18+ | TypeScript | Express.js | MikroORM | MySQL 8.0 | Redis | JWT
+**Backend:** Node.js 18+ | TypeScript | Express.js | MikroORM | PostgreSQL 16 | Redis | JWT
 
 **Frontend:** Angular 18+ | TypeScript | SCSS
 
@@ -116,7 +116,7 @@ git clone --recurse-submodules https://github.com/Lau-prog/TP-Desarrollo-de-Soft
 cd TP-Desarrollo-de-Software
 ```
 
-#### 2. Levantar infraestructura (MySQL + Redis) con Docker
+#### 2. Levantar infraestructura (PostgreSQL + Redis) con Docker
 
 ```bash
 cd infra
@@ -124,7 +124,7 @@ docker compose up -d
 ```
 
 Esto iniciará:
-- **MySQL** (Percona Server 8.0) en el puerto 3307
+- **PostgreSQL** 16 en el puerto 5432
 - **Redis** 7 en el puerto 6379
 
 #### 3. Configurar el Backend
@@ -138,11 +138,11 @@ cp .env.example .env.development
 Edita `.env.development` con las siguientes configuraciones importantes:
 
 ```env
-# Database - Conexión a MySQL de Docker
+# Database - Conexión a PostgreSQL de Docker
 DB_HOST=localhost
-DB_PORT=3307
-DB_USER=dsw
-DB_PASSWORD=dsw
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
 DB_NAME=tpdesarrollo
 
 # Redis - Opcional pero recomendado
@@ -299,6 +299,24 @@ node scripts/seed-test-data.mjs
 - **[Swagger UI](http://localhost:3000/api-docs)** - Documentación API (con backend corriendo)
 - **[README Backend](apps/backend/README.md)** - Arquitectura y endpoints
 - **[README Frontend](apps/frontend/README.md)** - Componentes y servicios
+- **[Guía de Deployment](DEPLOYMENT.md)** - Deploy 100% GRATIS (Vercel + Render + Neon.tech)
+
+---
+
+## Deployment en Internet
+
+¿Querés desplegar la app en internet **COMPLETAMENTE GRATIS**?
+
+👉 **[Ver guía completa de deployment](DEPLOYMENT.md)**
+
+**Stack gratuito:**
+- ✅ **Frontend**: Vercel (gratis ilimitado)
+- ✅ **Backend**: Render (750 hrs/mes gratis)
+- ✅ **Database**: Neon.tech - PostgreSQL (3GB gratis)
+- ✅ **Redis**: Upstash (10K comandos/día gratis)
+- 💰 **Costo total**: $0/mes
+
+**Tiempo estimado**: 2 horas
 
 ---
 
@@ -324,7 +342,7 @@ node scripts/seed-test-data.mjs
 
 ## Troubleshooting
 
-### Error: "Cannot connect to MySQL"
+### Error: "Cannot connect to PostgreSQL"
 
 **Problema**: El backend no puede conectarse a la base de datos.
 
@@ -333,17 +351,17 @@ node scripts/seed-test-data.mjs
    ```bash
    docker compose ps
    ```
-2. Verifica que el puerto 3307 esté libre:
+2. Verifica que el puerto 5432 esté libre:
    ```bash
-   netstat -ano | findstr :3307  # Windows
-   lsof -i :3307                  # Linux/Mac
+   netstat -ano | findstr :5432  # Windows
+   lsof -i :5432                  # Linux/Mac
    ```
 3. Revisa las credenciales en `.env.development`:
    ```env
    DB_HOST=localhost
-   DB_PORT=3307
-   DB_USER=dsw
-   DB_PASSWORD=dsw
+   DB_PORT=5432
+   DB_USER=postgres
+   DB_PASSWORD=postgres
    DB_NAME=tpdesarrollo
    ```
 

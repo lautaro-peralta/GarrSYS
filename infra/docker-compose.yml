@@ -1,31 +1,5 @@
 services:
   # ==========================================================================
-  # MySQL Database - Percona Server 8.0
-  # ==========================================================================
-  mysql:
-    image: percona/percona-server:8.0
-    container_name: ps8-dsw-tgs
-    restart: unless-stopped
-    ports:
-      - "3307:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: tpdesarrollo
-      MYSQL_USER: dsw
-      MYSQL_PASSWORD: dsw
-    volumes:
-      - mysql-data:/var/lib/mysql
-    networks:
-      - tgs-network
-    # Health check - Verifica que MySQL esté respondiendo
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
-      interval: 10s      # Chequear cada 10 segundos
-      timeout: 5s        # Timeout después de 5 segundos
-      retries: 5         # Reintentar 5 veces antes de marcar como unhealthy
-      start_period: 30s  # Dar 30s de gracia al inicio
-
-  # ==========================================================================
   # Redis Cache
   # ==========================================================================
   redis:
@@ -47,6 +21,118 @@ services:
       start_period: 10s
     command: redis-server --appendonly yes
 
+  # ==========================================================================
+  # PostgreSQL Database 16
+  # ==========================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-dsw-tgs
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tpdesarrollo
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - tgs-network
+    # Health check - Verifica que PostgreSQL esté respondiendo
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ==========================================================================
+  # Backend API - Express.js (Production only)
+  # ==========================================================================
+  backend:
+    build:
+      context: ../apps/backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: tgs-backend-prod
+    restart: unless-stopped
+    profiles:
+      - production
+    ports:
+      - "3000:3000"
+    environment:
+      # Application
+      NODE_ENV: production
+      PORT: 3000
+      # Database (connect to postgres service)
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      DB_NAME: ${POSTGRES_DB:-tpdesarrollo}
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-Th1sIsMyN3wSupaDupaS3cureS3cr3ttt}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      # Redis (connect to redis service)
+      REDIS_ENABLED: ${REDIS_ENABLED:-true}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # Security
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost}
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+      ENABLE_SECURITY_HEADERS: true
+      ENABLE_RATE_LIMITING: true
+      # Email
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM:-noreply@tgs-system.com}
+      # Frontend
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      EMAIL_VERIFICATION_REQUIRED: ${EMAIL_VERIFICATION_REQUIRED:-true}
+      # Docker flag
+      DOCKER_CONTAINER: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - tgs-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================================================
+  # Frontend - Angular with Nginx (Production only)
+  # ==========================================================================
+  frontend:
+    build:
+      context: ../apps/frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: tgs-frontend-prod
+    restart: unless-stopped
+    profiles:
+      - production
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - tgs-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
 # ==========================================================================
 # Networks
 # ==========================================================================
@@ -59,7 +145,7 @@ networks:
 # Volumes
 # ==========================================================================
 volumes:
-  mysql-data:
-    name: tgs-mysql-data
+  postgres-data:
+    name: tgs-postgres-data
   redis-data:
     name: tgs-redis-data

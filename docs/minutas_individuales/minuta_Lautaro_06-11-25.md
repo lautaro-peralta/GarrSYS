@@ -4,7 +4,6 @@
 
 **Participantes:**
 - Lautaro
-- Equipo de desarrollo
 
 ## Resumen de Cambios Recientes
 

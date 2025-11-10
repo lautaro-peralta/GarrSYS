@@ -27,6 +27,8 @@ The Garrison System es un sistema de ventas y gestión de recursos ambientado en
 
 ## 🚀 Inicio Rápido
 
+### Desarrollo Local
+
 **Configuración simplificada con Docker para la infraestructura:**
 
 ```bash
@@ -55,6 +57,14 @@ pnpm start
 - Backend API: http://localhost:3000
 - Swagger Docs: http://localhost:3000/api-docs
 
+### Producción en la Nube
+
+El proyecto está desplegado en producción utilizando servicios en la nube:
+- **Neon.tech** - PostgreSQL serverless
+- **Redis Cloud** - Cache distribuido
+- **Render** - Backend API
+- **Vercel** - Frontend estático
+
 ---
 
 ## Sobre este Proyecto
@@ -79,8 +89,7 @@ TP-Desarrollo-de-Software/
 │   ├── backend/              → Submódulo: API REST (Node.js + TypeScript)
 │   └── frontend/             → Submódulo: SPA (Angular + TypeScript)
 ├── infra/
-│   ├── docker-compose.yml    → MySQL y Redis
-│   └── init-test-data.sql    → Datos de prueba
+│   └── docker-compose.yml    → PostgreSQL 16 y Redis 7
 ├── scripts/
 │   └── load-test-data.sh/.bat → Script para cargar datos
 └── Makefile                  → Comandos simplificados
@@ -90,11 +99,23 @@ TP-Desarrollo-de-Software/
 
 ## Tecnologías
 
+### Stack de Desarrollo
+
 **Backend:** Node.js 18+ | TypeScript | Express.js | MikroORM | PostgreSQL 16 | Redis | JWT
 
 **Frontend:** Angular 18+ | TypeScript | SCSS
 
-**Infraestructura:** Docker | Docker Compose | Git (submódulos)
+**Infraestructura Local:** Docker | Docker Compose | Git (submódulos)
+
+### Stack de Producción (Cloud)
+
+**Database:** Neon.tech (PostgreSQL 16 serverless)
+
+**Cache:** Redis Cloud (Redis 7)
+
+**Backend Hosting:** Render (Node.js containers)
+
+**Frontend Hosting:** Vercel (Edge Network)
 
 ---
 
@@ -299,24 +320,46 @@ node scripts/seed-test-data.mjs
 - **[Swagger UI](http://localhost:3000/api-docs)** - Documentación API (con backend corriendo)
 - **[README Backend](apps/backend/README.md)** - Arquitectura y endpoints
 - **[README Frontend](apps/frontend/README.md)** - Componentes y servicios
-- **[Guía de Deployment](DEPLOYMENT.md)** - Deploy 100% GRATIS (Vercel + Render + Neon.tech)
 
 ---
 
-## Deployment en Internet
+## Deployment en Producción
 
-¿Querés desplegar la app en internet **COMPLETAMENTE GRATIS**?
+El sistema está desplegado en la nube utilizando una arquitectura distribuida:
 
-👉 **[Ver guía completa de deployment](DEPLOYMENT.md)**
+### 🌐 Arquitectura de Producción
 
-**Stack gratuito:**
-- ✅ **Frontend**: Vercel (gratis ilimitado)
-- ✅ **Backend**: Render (750 hrs/mes gratis)
-- ✅ **Database**: Neon.tech - PostgreSQL (3GB gratis)
-- ✅ **Redis**: Upstash (10K comandos/día gratis)
-- 💰 **Costo total**: $0/mes
+```
+                    Internet
+                       │
+                       ↓
+        ┌──────────────────────────┐
+        │   Vercel Edge Network    │  ← Frontend (Angular SPA)
+        │                          │     • Hosting estático global
+        └──────────┬───────────────┘     • SSL/TLS automático
+                   │
+                   ↓ HTTPS API calls
+        ┌──────────────────────────┐
+        │   Render Cloud Platform  │  ← Backend (Node.js + Express)
+        │                          │     • Contenedores Docker
+        └──────────┬───────────────┘     • Health monitoring
+                   │
+                   ├─────────────────────┐
+                   ↓                     ↓
+        ┌──────────────────┐  ┌──────────────────┐
+        │   Neon.tech      │  │  Redis Cloud     │
+        │                  │  │                  │
+        │ PostgreSQL 16    │  │  Redis 7         │
+        │ Serverless DB    │  │  Cache layer     │
+        └──────────────────┘  └──────────────────┘
+```
 
-**Tiempo estimado**: 2 horas
+**Componentes de la infraestructura:**
+
+- **Frontend**: Aplicación Angular servida desde Vercel con CDN global
+- **Backend**: API REST en Node.js/Express desplegada en Render
+- **Base de Datos**: PostgreSQL 16 serverless en Neon.tech con pooling de conexiones
+- **Cache**: Redis 7 en Redis Cloud para optimización de consultas y sesiones
 
 ---
 

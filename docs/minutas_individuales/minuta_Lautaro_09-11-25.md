@@ -1,4 +1,4 @@
-# Minuta de Cambios - 9 de Noviembre de 2025
+# Minuta de Cambios - 09 de Noviembre de 2025
 
 **Fecha:** 09/11/2025
 
@@ -6,1021 +6,381 @@
 - Lautaro
 - Equipo de desarrollo
 
-## Resumen Ejecutivo
+## Resumen de Cambios Recientes
 
-Esta minuta documenta la implementación completa de un sistema robusto para prevenir el bloqueo permanente de direcciones de email durante el registro de usuarios. Se implementaron tres mejoras críticas: limpieza automática de cuentas no verificadas, lógica inteligente de reclamación de emails, y templates mejorados que informan a los usuarios sobre las políticas del sistema.
+Esta minuta documenta los cambios más significativos realizados desde la minuta del 06 de noviembre. El logro principal es el **deployment completo de la aplicación The Garrison System (TGS) a servicios cloud en producción**, junto con la resolución exitosa de problemas críticos de email con SendGrid y una limpieza exhaustiva de la configuración del proyecto.
 
-## Problema Identificado
+## Nuevas Características y Mejoras
 
-**Escenario crítico:** Si un usuario registra una cuenta con el email de otra persona por error (ej: `alice@example.com`), el verdadero dueño del email (Alice) quedaba permanentemente bloqueado sin poder registrarse.
+### 1. Deployment Completo a Producción (09/11) ⭐
 
-**Impacto:**
-- Pérdida potencial de usuarios legítimos
-- Soporte técnico manual requerido para resolver casos
-- Mala experiencia de usuario
+- **Backend deployado en Render:**
+  - URL: https://tgs-backend-u5xz.onrender.com
+  - Plan: Free tier (sin necesidad de pago)
+  - Base de datos: PostgreSQL vía Neon.tech
+  - Email service: SendGrid con verificación funcional
+  - Configuración:
+    - `NODE_ENV=production`
+    - `DATABASE_URL` conectado a Neon.tech
+    - `SENDGRID_API_KEY` y `SENDGRID_FROM` configurados
+    - `EMAIL_VERIFICATION_REQUIRED=true` (producción)
+    - `FRONTEND_URL=https://garrsys.vercel.app`
+    - Todas las variables configuradas directamente en Render
 
-## Solución Implementada
+- **Frontend deployado en Vercel:**
+  - URL: https://garrsys.vercel.app
+  - Plan: Free tier
+  - Framework: Angular 17
+  - Configuración:
+    - Output directory corregido a `dist/app-tgs/browser`
+    - Variables de entorno configuradas
+    - Build exitoso con optimizaciones de producción
 
-### Opción Elegida: Hybrid Soft Registration con Tres Capas de Protección
+- **Base de datos en Neon.tech:**
+  - PostgreSQL serverless
+  - Plan: Free tier
+  - Región: São Paulo (sa-east-1)
+  - Migraciones ejecutadas exitosamente
+  - Schema completo creado con todas las tablas
 
-1. **Limpieza Automática (7 días):** Cron job elimina cuentas no verificadas
-2. **Reclamación Inteligente (24 horas):** Sistema permite reemplazar cuentas antiguas no verificadas
-3. **Resend Inmediato (<24 horas):** Reenvía verificación si la cuenta es reciente
+### 2. Resolución de Problemas de Email con SendGrid (09/11)
 
----
+- **Diagnóstico del problema:**
+  - Creación de endpoint temporal `/health/email-debug` para diagnóstico sin logs
+  - Identificación de conflicto entre variables SMTP y SendGrid
+  - Descubrimiento de validación Zod fallando con credenciales SMTP vacías
 
-## Cambios Implementados
+- **Soluciones implementadas:**
+  - **Remoción de variables SMTP de Render:** Eliminadas `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` que interferían
+  - **Fix en schema Zod:** Modificación de `email.service.ts` para permitir credenciales SMTP opcionales:
+    ```typescript
+    auth: z.object({
+      user: z.string().optional().default(''),
+      pass: z.string().optional().default(''),
+    })
+    ```
+  - **Endpoint de debug mejorado:** Agregado soporte para re-inicialización forzada y captura de errores detallados
+  - **Resultado:** Email service funcionando al 100% con SendGrid en producción
 
-### 1. Servicio de Limpieza Automática ⭐
+- **Archivos modificados para email:**
+  - `src/shared/services/email.service.ts` - Schema Zod actualizado
+  - `src/shared/controllers/health.controller.ts` - Endpoint de debug con re-init
+  - `src/shared/routes/health.routes.ts` - Ruta `/health/email-debug` agregada
 
-**Archivo creado:** [src/shared/services/cleanup.service.ts](src/shared/services/cleanup.service.ts)
+### 3. Limpieza y Organización del Proyecto (09/11)
 
-**Funcionalidades:**
-```typescript
-class CleanupService {
-  // Elimina cuentas no verificadas mayores a N días (default: 7)
-  async cleanExpiredUnverifiedAccounts(daysOld: number = 7): Promise<number>
+#### 3.1 Simplificación de Archivos .env
 
-  // Elimina tokens de verificación expirados
-  async cleanExpiredEmailVerifications(): Promise<number>
+- **apps/backend/.env (Desarrollo local):**
+  - Limpiado y simplificado
+  - Comentarios claros en español
+  - Solo variables necesarias para desarrollo
+  - PostgreSQL local + Mailtrap para emails
+  - `EMAIL_VERIFICATION_REQUIRED=false` para desarrollo
 
-  // Ejecuta todas las tareas de limpieza
-  async runAllCleanupTasks(): Promise<object>
+- **apps/backend/.env.example (Plantilla):**
+  - Restructurado completamente
+  - Documentación clara de cada variable
+  - Instrucciones para generar JWT_SECRET seguro
+  - Opciones para SMTP (Mailtrap) y SendGrid claramente separadas
+  - Comentarios sobre cuándo usar cada opción
 
-  // Obtiene estadísticas sin eliminar nada
-  async getCleanupStats(daysOld: number = 7): Promise<object>
-}
-```
+- **infra/.env (Docker Compose):**
+  - Simplificado solo para Docker
+  - Eliminadas variables innecesarias de producción
+  - Solo lo esencial para docker-compose
 
-**Características:**
-- ✅ Logging detallado de cada operación
-- ✅ Manejo de errores robusto
-- ✅ Transacciones atómicas con MikroORM
-- ✅ Información de cuentas eliminadas para auditoría
+- **Archivos eliminados:**
+  - ❌ `infra/.env.production.example` - Ya no necesario (producción usa Render/Vercel)
 
----
+#### 3.2 Eliminación de Documentación Innecesaria
 
-### 2. Lógica de Reclamación Inteligente de Emails 🔄
+Archivos .md eliminados del root:
+- ❌ `GIT_SUBMODULES_GUIDE.md` - Guía de submodules innecesaria
+- ❌ `SAFE_SUBMODULE_UPDATE.md` - Procedimientos redundantes
+- ❌ `VSCODE_EXTENSIONS.md` - Configuración IDE innecesaria
+- ❌ `infra/README.md` - README redundante
 
-**Archivo modificado:** [src/modules/auth/auth.controller.ts](src/modules/auth/auth.controller.ts:81-183)
+Archivos .md mantenidos (importantes):
+- ✅ `README.md` - Documentación principal del proyecto
+- ✅ `DEPLOYMENT.md` - Guía de deployment actualizada
+- ✅ `apps/backend/README.md` - Documentación del backend
+- ✅ `apps/backend/docs/*.md` - Documentación técnica completa
+- ✅ `docs/minutas_*/*.md` - Minutas del proyecto
 
-**Flujo de Decisión Implementado:**
+#### 3.3 Actualización de SQL - Roles USER Obligatorios
 
-```
-┌─────────────────────────────────────────────────┐
-│ Usuario intenta registrar email existente      │
-└─────────────────────┬───────────────────────────┘
-                      │
-                      ▼
-            ┌─────────────────────┐
-            │ ¿Email verificado?  │
-            └──────┬──────────────┘
-                   │
-          ┌────────┴────────┐
-          │                 │
-         SÍ                NO
-          │                 │
-          ▼                 ▼
-    ┌─────────┐     ┌──────────────┐
-    │ CONFLICTO│     │ ¿Antigüedad? │
-    │  (409)   │     └──────┬───────┘
-    └─────────┘            │
-                  ┌────────┴────────┐
-                  │                 │
-             < 24 HORAS        > 24 HORAS
-                  │                 │
-                  ▼                 ▼
-         ┌─────────────────┐  ┌──────────────┐
-         │ REENVIAR EMAIL  │  │ ELIMINAR OLD │
-         │ Código: 409     │  │ CREAR NUEVO  │
-         │ + Nuevo token   │  │ Código: 201  │
-         └─────────────────┘  └──────────────┘
-```
+- **Modificación en `infra/init-test-data.sql`:**
+  - Todos los usuarios ahora tienen rol `USER` + su rol específico
+  - Estructura de roles actualizada:
+    - `{"USER","ADMIN"}` para administradores
+    - `{"USER","PARTNER"}` para socios
+    - `{"USER","DISTRIBUTOR"}` para distribuidores
+    - `{"USER","CLIENT"}` para clientes
+    - `{"USER","AUTHORITY"}` para autoridades
+    - `{"USER"}` para usuarios base sin verificar
 
-**Código Clave:**
-```typescript
-// Escenario A: Email verificado → Conflicto
-if (existingEmail.emailVerified) {
-  return ResponseUtil.conflict(res, 'Email is already registered', 'email');
-}
+- **Total de usuarios actualizados:** 26 usuarios en el SQL de test
+- **Impacto:** Garantiza consistencia en el sistema de roles y permisos
 
-// Escenario B: <24h → Reenviar verificación
-if (accountAge < TWENTY_FOUR_HOURS) {
-  // Crea o actualiza token de verificación
-  // Reenvía email al verdadero dueño
-  return res.status(409).json({
-    message: 'Email already registered - verification email resent',
-    code: 'EMAIL_VERIFICATION_RESENT'
-  });
-}
+### 4. Endpoint de Debug para Email (Temporal)
 
-// Escenario C: >24h → Reclamar email
-else {
-  // Elimina cuenta antigua y verifications
-  await em.nativeDelete(EmailVerification, { email });
-  await em.removeAndFlush(existingEmail);
-  // Continúa con registro normal
-}
-```
+- **Nuevo endpoint:** `GET /health/email-debug`
+  - Muestra estado del servicio de email
+  - Información de configuración (API keys enmascaradas)
+  - Permite re-inicialización con `?reinit=true`
+  - Soporte para envío de email de prueba con `?test=email@example.com`
+  - Captura de errores de inicialización
 
-**Logging de Seguridad:**
-```typescript
-logger.warn({
-  email,
-  oldUserId: existingEmail.id,
-  accountAge: Math.floor(accountAge / 1000 / 60 / 60) + ' hours',
-  oldUsername: existingEmail.username
-}, 'Reclaiming email from old unverified account');
-```
+- **Propósito:** Diagnóstico de problemas de email sin necesidad de acceder a logs de Render
 
----
-
-### 3. Templates de Email Mejorados 📧
-
-**Archivo modificado:** [src/shared/services/email.service.ts](src/shared/services/email.service.ts:499-515)
-
-**Cambios en HTML y Texto Plano:**
-
-**Antes:**
-```html
-<p class="important-title">Información importante:</p>
-<ul>
-  <li>Este enlace expirará en 15 minutos</li>
-  <li>Si no solicitaste esta verificación, ignora este email</li>
-</ul>
-```
-
-**Después:**
-```html
-<p class="important-title">Información importante:</p>
-<ul>
-  <li><strong>Este enlace expirará en 15 minutos</strong></li>
-  <li>No compartas este enlace con nadie</li>
-  <li>Si no verificas tu cuenta en 7 días, será eliminada automáticamente</li>
-</ul>
-
-<p class="important-title">¿No solicitaste esta verificación?</p>
-<p class="text">Si recibiste este email por error y no creaste una cuenta:</p>
-<ul>
-  <li>Puedes <strong>ignorar este email de forma segura</strong></li>
-  <li>La cuenta no verificada será eliminada automáticamente en 7 días</li>
-  <li>Después de 24 horas, podrás registrarte normalmente con este email</li>
-  <li>Tu dirección de email no será utilizada sin tu consentimiento</li>
-</ul>
-```
-
-**Beneficios:**
-- ✅ Transparencia total sobre las políticas del sistema
-- ✅ Tranquiliza a usuarios que recibieron el email por error
-- ✅ Explica claramente el proceso de reclamación
-- ✅ Reduce contactos a soporte técnico
-
----
-
-### 4. Servicio de Programación de Tareas (Scheduler) ⏰
-
-**Archivo creado:** [src/shared/services/scheduler.service.ts](src/shared/services/scheduler.service.ts)
-
-**Dependencia agregada:**
-```json
-{
-  "dependencies": {
-    "node-cron": "^3.0.3"
-  },
-  "devDependencies": {
-    "@types/node-cron": "^3.0.11"
-  }
-}
-```
-
-**Configuración del Cron Job:**
-```typescript
-// Ejecuta limpieza diariamente a las 3:00 AM (hora de Argentina)
-const cleanupTask = cron.schedule('0 3 * * *', async () => {
-  const results = await cleanupService.runAllCleanupTasks();
-  logger.info({ results }, 'Scheduled cleanup completed');
-}, {
-  scheduled: true,
-  timezone: 'America/Argentina/Buenos_Aires'
-});
-```
-
-**Funcionalidades del Scheduler:**
-```typescript
-class SchedulerService {
-  start(): void                    // Inicia todos los cron jobs
-  stop(): void                     // Detiene todos los cron jobs
-  getStatus(): object              // Estado actual del scheduler
-  triggerCleanupNow(): Promise     // Ejecuta limpieza manualmente
-  getCleanupPreview(): Promise     // Vista previa sin eliminar
-}
-```
-
-**Integración en App:**
-```typescript
-// src/app.ts - Línea 664-675
-schedulerService.start();
-logger.info({
-  taskCount: status.taskCount,
-  tasks: status.tasks
-}, 'Scheduler service started - automated cleanup enabled');
-```
-
----
-
-### 5. API de Administración para Cleanup 🛠️
-
-**Archivos creados:**
-- [src/shared/controllers/cleanup.controller.ts](src/shared/controllers/cleanup.controller.ts)
-- [src/shared/routes/cleanup.routes.ts](src/shared/routes/cleanup.routes.ts)
-
-**Endpoints Disponibles:**
-
-| Método | Endpoint                            | Descripción                           |
-| ------ | ----------------------------------- | ------------------------------------- |
-| `GET`  | `/admin/cleanup/scheduler/status`   | Estado del scheduler y cron jobs      |
-| `GET`  | `/admin/cleanup/preview?daysOld=7`  | Vista previa de items a eliminar      |
-| `POST` | `/admin/cleanup/trigger`            | Ejecuta limpieza completa manualmente |
-| `POST` | `/admin/cleanup/accounts?daysOld=7` | Limpia solo cuentas no verificadas    |
-| `POST` | `/admin/cleanup/verifications`      | Limpia solo tokens expirados          |
-
-**Ejemplo de Respuesta - Preview:**
-```json
-{
-  "success": true,
-  "message": "Cleanup preview generated successfully",
-  "data": {
-    "daysOld": 7,
-    "preview": {
-      "unverifiedAccountsCount": 12,
-      "expiredVerificationsCount": 35
+- **Datos retornados:**
+  ```json
+  {
+    "success": true,
+    "emailService": {
+      "enabled": true,
+      "configured": true,
+      "provider": "SendGrid",
+      "hasSendGridCredentials": true
     },
-    "message": "Found 12 unverified accounts older than 7 days and 35 expired verifications"
-  }
-}
-```
-
-**Ejemplo de Respuesta - Trigger:**
-```json
-{
-  "success": true,
-  "message": "Cleanup executed successfully",
-  "data": {
-    "results": {
-      "unverifiedAccounts": 12,
-      "emailVerifications": 35,
-      "totalCleaned": 47
-    },
-    "deletedItems": 47,
-    "breakdown": {
-      "unverifiedAccounts": 12,
-      "expiredVerifications": 35
+    "environment": {
+      "nodeEnv": "production",
+      "emailVerificationRequired": true,
+      "hasSendGridApiKey": true,
+      "hasSendGridFrom": true,
+      "sendgridApiKeyPrefix": "SG.yR2Fiuw...",
+      "sendgridFromValue": "thegarrisonsystem@gmail.com"
     }
   }
-}
-```
+  ```
 
-**Registro en App:**
-```typescript
-// src/app.ts - Línea 580-581
-app.use('/admin/cleanup', cleanupRouter);
-```
+## Cambios Técnicos Importantes
 
----
-
-## Flujos de Usuario Completos
-
-### Flujo 1: Registro con Email de Otra Persona (<24h)
+### Estructura de Deployment en Producción
 
 ```
-DÍA 1 - 10:00 AM
-Usuario B (error) → Registra "alice@example.com"
-                  → Sistema crea cuenta no verificada
-                  → Envía email a alice@example.com
-
-DÍA 1 - 02:00 PM (4 horas después)
-Alice (legítima)  → Intenta registrar "alice@example.com"
-                  → Sistema detecta cuenta <24h
-                  → NO elimina cuenta anterior
-                  → Regenera token de verificación
-                  → Reenvía email a alice@example.com
-                  ← Respuesta 409: "Email already registered - verification resent"
-
-DÍA 1 - 02:05 PM
-Alice             → Recibe email de verificación
-                  → Hace clic en el enlace
-                  → ✅ Cuenta verificada exitosamente
-                  → ✅ Alice obtiene acceso
+Production Environment:
+├── Backend (Render)
+│   ├── Service: tgs-backend-u5xz
+│   ├── Plan: Free tier
+│   ├── Database: PostgreSQL via Neon.tech
+│   ├── Email: SendGrid
+│   └── URL: https://tgs-backend-u5xz.onrender.com
+│
+├── Frontend (Vercel)
+│   ├── Project: garrsys
+│   ├── Plan: Free tier
+│   ├── Framework: Angular 17
+│   └── URL: https://garrsys.vercel.app
+│
+└── Database (Neon.tech)
+    ├── Type: PostgreSQL Serverless
+    ├── Plan: Free tier
+    ├── Region: sa-east-1 (São Paulo)
+    └── Connection: SSL required
 ```
 
-### Flujo 2: Registro con Email de Otra Persona (>24h)
+### Flujo de Email Verificado
+
+1. Usuario se registra en https://garrsys.vercel.app
+2. Backend en Render crea usuario en Neon.tech
+3. SendGrid envía email de verificación automáticamente
+4. Usuario recibe email en su bandeja
+5. Usuario hace click en link de verificación
+6. Cuenta verificada, usuario puede hacer login
+
+### Variables de Entorno por Ambiente
+
+**Desarrollo Local:**
+- PostgreSQL local (localhost:5432)
+- Mailtrap para testing de emails
+- `EMAIL_VERIFICATION_REQUIRED=false`
+- Comando: `pnpm start:dev`
+
+**Producción (Render):**
+- Neon.tech PostgreSQL
+- SendGrid para emails reales
+- `EMAIL_VERIFICATION_REQUIRED=true`
+- Variables configuradas en Render Dashboard
+
+**Docker (Opcional):**
+- PostgreSQL via docker-compose
+- Mailtrap para emails
+- Variables en `infra/.env`
+
+### Archivos de Configuración Actualizados
 
 ```
-DÍA 1 - 10:00 AM
-Usuario B (error) → Registra "alice@example.com"
-                  → Sistema crea cuenta no verificada
-                  → Envía email a alice@example.com
+Backend Environment Files:
+├── .env                    (Desarrollo local - git ignored)
+├── .env.example            (Plantilla con instrucciones)
+└── render.yaml             (Config de deployment en Render)
 
-DÍA 2 - 03:00 PM (29 horas después)
-Alice (legítima)  → Intenta registrar "alice@example.com"
-                  → Sistema detecta cuenta >24h
-                  → 🗑️ Elimina cuenta anterior automáticamente
-                  → 🗑️ Elimina tokens de verificación anteriores
-                  → ✅ Crea nueva cuenta para Alice
-                  → Envía email de verificación a Alice
-                  ← Respuesta 201: "User created successfully"
+Infra Environment Files:
+└── .env                    (Solo para Docker Compose)
 
-DÍA 2 - 03:05 PM
-Alice             → Recibe email de verificación
-                  → Verifica su cuenta
-                  → ✅ Acceso completo al sistema
+SQL Data Files:
+└── infra/init-test-data.sql (26 usuarios con roles actualizados)
 ```
 
-### Flujo 3: Limpieza Automática (7 días)
-
-```
-DÍA 1 - 10:00 AM
-Usuario B (error) → Registra "alice@example.com"
-                  → Sistema crea cuenta no verificada
-
-DÍA 1 - DÍA 7
-                  → Cuenta permanece sin verificar
-                  → Alice nunca intenta registrarse
-
-DÍA 8 - 03:00 AM
-Cron Job          → Ejecuta limpieza programada
-                  → Encuentra cuenta >7 días sin verificar
-                  → 🗑️ Elimina cuenta de Usuario B
-                  → 🗑️ Elimina tokens expirados
-                  → 📝 Registra en logs: 1 cuenta eliminada
-                  → ✅ Email "alice@example.com" queda libre
-
-DÍA 8 - 10:00 AM
-Alice (legítima)  → Registra "alice@example.com"
-                  → ✅ Registro exitoso (email disponible)
-```
-
----
-
-## Archivos Modificados y Creados
-
-### Archivos Creados (4)
-
-1. **`src/shared/services/cleanup.service.ts`** (224 líneas)
-   - Servicio de limpieza de datos expirados
-   - Métodos para limpiar cuentas y verificaciones
-   - Estadísticas y preview
-
-2. **`src/shared/services/scheduler.service.ts`** (138 líneas)
-   - Servicio de programación de tareas con node-cron
-   - Gestión de cron jobs
-   - Trigger manual de limpieza
-
-3. **`src/shared/controllers/cleanup.controller.ts`** (134 líneas)
-   - Controlador de endpoints de administración
-   - Operaciones de limpieza manual
-   - Preview y estadísticas
-
-4. **`src/shared/routes/cleanup.routes.ts`** (28 líneas)
-   - Rutas de administración para cleanup
-   - 5 endpoints RESTful
-
-### Archivos Modificados (4)
-
-1. **`src/modules/auth/auth.controller.ts`**
-   - Líneas 81-183: Lógica de reclamación inteligente
-   - Tres escenarios manejados (verified, <24h, >24h)
-   - Logging detallado de operaciones
-
-2. **`src/shared/services/email.service.ts`**
-   - Líneas 499-515: Template HTML mejorado
-   - Líneas 539-565: Template texto plano mejorado
-   - Nueva sección "¿No solicitaste esta verificación?"
-
-3. **`src/app.ts`**
-   - Línea 53: Import de schedulerService
-   - Línea 52: Import de cleanupRouter
-   - Líneas 664-675: Inicialización del scheduler
-   - Línea 581: Registro de rutas /admin/cleanup
-
-4. **`package.json`**
-   - Agregado: `"node-cron": "^3.0.3"`
-   - Agregado: `"@types/node-cron": "^3.0.11"`
-
-### Archivos de Documentación Creados (1)
-
-1. **`minuta_Lautaro_09-11-25.md`** (este archivo)
-
----
-
-## Testing y Validación
-
-### Type Checking ✅
-```bash
-$ pnpm type-check
-# ✅ Sin errores de TypeScript
-```
-
-### Compilación ✅
-```bash
-$ pnpm build
-# ✅ Compilación exitosa
-```
-
----
-
-## Próximos Pasos Recomendados
-
-### Fase de Testing
-
-1. **Testing Manual:**
-   ```bash
-   # Iniciar servidor en desarrollo
-   pnpm start:dev
-
-   # Verificar que el scheduler inició
-   # Buscar en logs: "Scheduler service started"
-
-   # Probar endpoint de preview
-   curl http://localhost:3000/admin/cleanup/preview?daysOld=7
-
-   # Probar endpoint de status
-   curl http://localhost:3000/admin/cleanup/scheduler/status
-   ```
-
-2. **Testing de Escenarios:**
-   - ✅ Registrar usuario sin verificar
-   - ✅ Intentar re-registrar mismo email <24h (debe resend)
-   - ✅ Esperar 24h e intentar re-registrar (debe permitir)
-   - ✅ Verificar que limpieza manual funciona
-   - ✅ Verificar que cron job se ejecuta correctamente
-
-3. **Testing de Emails:**
-   - ✅ Verificar que template nuevo se renderiza correctamente
-   - ✅ Verificar sección "¿No solicitaste esta verificación?" visible
-   - ✅ Probar links de verificación
-
-### Fase de Documentación
-
-1. **Swagger/OpenAPI:**
-   - Documentar endpoints `/admin/cleanup/*`
-   - Agregar ejemplos de respuestas
-   - Documentar códigos de error
-
-2. **README:**
-   - Agregar sección sobre limpieza automática
-   - Documentar políticas de reclamación de email
-   - Instrucciones para configurar cron job
-
-### Fase de Monitoreo
-
-1. **Logging:**
-   - Revisar logs de limpieza diaria
-   - Monitorear métricas de reclamación de emails
-   - Alertas si cleanup falla
-
-2. **Métricas:**
-   - Cantidad de emails reclamados por día
-   - Cantidad de cuentas eliminadas por limpieza
-   - Tasa de verificación de emails
-
----
-
-## Configuración del Entorno
-
-### Variables de Entorno (Sin cambios requeridos)
-
-El sistema usa la configuración existente de `.env`:
-
-```bash
-# Email verification (ya configurado)
-EMAIL_VERIFICATION_REQUIRED=false  # o true en producción
-
-# Email service (ya configurado)
-SMTP_HOST=sandbox.smtp.mailtrap.io
-SMTP_PORT=2525
-SMTP_USER=your-mailtrap-user
-SMTP_PASS=your-mailtrap-password
-
-# Frontend (ya configurado)
-FRONTEND_URL=http://localhost:4200
-```
-
-**Nota:** No se requieren variables adicionales para el scheduler. La configuración del cron job está hardcodeada en `scheduler.service.ts`.
-
----
-
-## Impacto en el Sistema
-
-### Beneficios Inmediatos
-
-1. **✅ Mejor Experiencia de Usuario:**
-   - Usuarios legítimos pueden recuperar su email
-   - Transparencia total en las políticas
-   - Menos frustración en el registro
-
-2. **✅ Reducción de Carga en Soporte:**
-   - Casos de "email bloqueado" se resuelven automáticamente
-   - Menos tickets de soporte técnico
-   - Documentación clara en el email
-
-3. **✅ Seguridad y Limpieza:**
-   - Base de datos limpia de cuentas fantasma
-   - Menos superficie de ataque (cuentas abandonadas)
-   - Auditoría completa con logs
-
-4. **✅ Escalabilidad:**
-   - Sistema automatizado sin intervención manual
-   - Cron job puede manejar miles de cuentas
-   - Recursos de base de datos optimizados
-
-### Métricas Estimadas
-
-**Antes de la Implementación:**
-- Emails bloqueados permanentemente: 100%
-- Resolución manual requerida: 100%
-- Tiempo promedio de resolución: 24-48 horas
-- Satisfacción del usuario: ⭐⭐
-
-**Después de la Implementación:**
-- Emails bloqueados permanentemente: 0%
-- Resolución automática (<24h): ~80%
-- Resolución automática (7 días): ~95%
-- Resolución manual necesaria: ~5%
-- Tiempo promedio de resolución: <5 minutos
-- Satisfacción del usuario: ⭐⭐⭐⭐⭐
-
----
-
-## Consideraciones de Seguridad
-
-### Protecciones Implementadas
-
-1. **✅ Logging Completo:**
-   - Toda operación de reclamación queda registrada
-   - Logs incluyen: userId, email, timestamp, accountAge
-   - Auditoría completa para detectar abusos
-
-2. **✅ Ventanas de Tiempo:**
-   - 24 horas: Previene spam de registros
-   - 7 días: Balance entre limpieza y tiempo razonable
-   - Configurables según necesidades del negocio
-
-3. **✅ Solo Cuentas No Verificadas:**
-   - Cuentas verificadas nunca se eliminan automáticamente
-   - Protección contra pérdida de datos de usuarios reales
-
-4. **✅ Transacciones Atómicas:**
-   - Delete de user + verifications en una transacción
-   - Rollback automático si algo falla
-   - Consistencia de datos garantizada
-
-### Potenciales Vulnerabilidades y Mitigaciones
-
-| Vulnerabilidad                          | Probabilidad | Impacto | Mitigación                                  |
-| --------------------------------------- | ------------ | ------- | ------------------------------------------- |
-| Spam de registros                       | Media        | Bajo    | Rate limiting en `/api/auth/register`       |
-| Intentos de DoS con reclamaciones       | Baja         | Bajo    | Rate limiting + logging                     |
-| Eliminación accidental de cuenta válida | Muy Baja     | Alto    | Solo elimina NO verificadas, logs completos |
-
----
-
-## Comparación con Alternativas
-
-### Opción 1: Registro Temporal (No Elegida)
-
-**Ventajas:**
-- ✅ Email nunca bloqueado
-- ✅ No hay cuentas "fantasma" en DB principal
-
-**Desventajas:**
-- ❌ Complejidad arquitectónica (dos tablas)
-- ❌ Migración de datos entre tablas
-- ❌ Posibles race conditions
-- ❌ Código más complejo de mantener
-
-### Opción 3 (Elegida): Hybrid Soft Registration
-
-**Ventajas:**
-- ✅ **Implementación simple** (sin cambios de esquema)
-- ✅ **Resolución inmediata** (<24h con resend)
-- ✅ **Resolución automática** (>24h con reclaim)
-- ✅ **Limpieza programada** (7 días con cron)
-- ✅ **Logging completo** para auditoría
-- ✅ **Backward compatible** con código existente
-
-**Desventajas:**
-- ⚠️ Usuarios deben esperar 24h para reclamar
-- ⚠️ Requiere cron job funcionando
-
-**Veredicto:** ✅ Mejor balance entre simplicidad, efectividad y UX
-
----
-
-## Checklist de Validación
-
-### Pre-Deploy
-
-- [x] Código compila sin errores TypeScript
-- [x] Todas las funciones tienen documentación JSDoc
-- [x] Logging implementado en operaciones críticas
-- [x] Manejo de errores robusto
-- [x] Transacciones de DB son atómicas
-- [x] Templates de email actualizados (HTML + texto)
-- [ ] Pruebas unitarias escritas (TODO)
-- [ ] Pruebas de integración (TODO)
-- [ ] Documentación en Swagger (TODO)
-
-### Post-Deploy
-
-- [ ] Verificar que scheduler inicia correctamente
-- [ ] Verificar logs de primera ejecución de cron job
-- [ ] Monitorear métricas de reclamación de emails
-- [ ] Verificar que emails se envían correctamente
-- [ ] Validar que cleanup manual funciona
-- [ ] Review de logs de seguridad
-
----
-
-## Conclusión
-
-La implementación del sistema de prevención de bloqueo de emails ha sido completada exitosamente. El sistema ahora cuenta con:
-
-1. ✅ **Limpieza Automática:** Cron job diario a las 3 AM
-2. ✅ **Reclamación Inteligente:** Lógica de 24 horas implementada
-3. ✅ **Templates Mejorados:** Comunicación transparente con usuarios
-4. ✅ **API de Administración:** 5 endpoints para gestión manual
-5. ✅ **Logging Completo:** Auditoría de todas las operaciones
-
-**Impacto Esperado:**
-- 📉 95% reducción en casos de "email bloqueado"
-- 📉 80% reducción en tickets de soporte relacionados
-- 📈 Mejora significativa en experiencia de usuario
-- 📈 Base de datos más limpia y eficiente
-
-**Próximos Pasos Críticos:**
-1. Testing exhaustivo de los tres escenarios
-2. Documentación de endpoints en Swagger
-3. Monitoreo de logs durante primeros 7 días
-4. Ajuste de ventanas de tiempo según métricas reales
-
----
-
-**Preparado por:** Claude Code & Lautaro
-**Revisado por:** Equipo de desarrollo
-**Próxima revisión:** 17/11/2025 (después de 7 días de monitoreo)
-**Versión:** 1.0.0
-
----
-
-## Apéndice A: Configuración del Cron Job
-
-### Expresión Cron Explicada
-
-```
-┌───────────── minuto (0 - 59)
-│ ┌─────────── hora (0 - 23)
-│ │ ┌───────── día del mes (1 - 31)
-│ │ │ ┌─────── mes (1 - 12)
-│ │ │ │ ┌───── día de la semana (0 - 6) (domingo = 0)
-│ │ │ │ │
-│ │ │ │ │
-0 3 * * *  → Cada día a las 3:00 AM
-```
-
-### Alternativas de Programación
-
-```typescript
-// Cada 12 horas
-'0 */12 * * *'
-
-// Cada domingo a las 2 AM
-'0 2 * * 0'
-
-// Primer día de cada mes a las 4 AM
-'0 4 1 * *'
-
-// Cada 6 horas
-'0 */6 * * *'
-```
-
-### Cambiar Horario del Cron
-
-Editar `src/shared/services/scheduler.service.ts`:
-
-```typescript
-// Cambiar de 3 AM a 2 AM
-const cleanupTask = cron.schedule('0 2 * * *', async () => {
-  // ...
-});
-
-// Cambiar zona horaria
-timezone: 'America/New_York'  // o la zona que necesites
-```
-
----
-
-## Apéndice B: Endpoints de Admin - Ejemplos Completos
-
-### 1. GET `/admin/cleanup/scheduler/status`
-
-**Request:**
-```bash
-curl -X GET http://localhost:3000/admin/cleanup/scheduler/status \
-  -H "Cookie: access_token=your_admin_token"
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Scheduler status retrieved successfully",
-  "data": {
-    "isRunning": true,
-    "taskCount": 1,
-    "tasks": [
-      {
-        "name": "Daily Cleanup",
-        "schedule": "Every day at 3:00 AM (America/Argentina/Buenos_Aires)",
-        "isRunning": true
-      }
-    ]
-  },
-  "meta": {
-    "timestamp": "2025-11-10T15:30:00.000Z",
-    "statusCode": 200
-  }
-}
-```
-
-### 2. GET `/admin/cleanup/preview?daysOld=7`
-
-**Request:**
-```bash
-curl -X GET "http://localhost:3000/admin/cleanup/preview?daysOld=7" \
-  -H "Cookie: access_token=your_admin_token"
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Cleanup preview generated successfully",
-  "data": {
-    "daysOld": 7,
-    "preview": {
-      "unverifiedAccountsCount": 12,
-      "expiredVerificationsCount": 35
-    },
-    "message": "Found 12 unverified accounts older than 7 days and 35 expired verifications"
-  },
-  "meta": {
-    "timestamp": "2025-11-10T15:31:00.000Z",
-    "statusCode": 200
-  }
-}
-```
-
-### 3. POST `/admin/cleanup/trigger`
-
-**Request:**
-```bash
-curl -X POST http://localhost:3000/admin/cleanup/trigger \
-  -H "Cookie: access_token=your_admin_token"
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Cleanup executed successfully",
-  "data": {
-    "results": {
-      "unverifiedAccounts": 12,
-      "emailVerifications": 35,
-      "totalCleaned": 47
-    },
-    "deletedItems": 47,
-    "breakdown": {
-      "unverifiedAccounts": 12,
-      "expiredVerifications": 35
-    }
-  },
-  "meta": {
-    "timestamp": "2025-11-10T15:32:00.000Z",
-    "statusCode": 200
-  }
-}
-```
-
----
-
-## Apéndice C: Mensajes de Log
-
-### Logs del Scheduler
-
-```
-[INFO] Scheduler service started - automated cleanup enabled
-{
-  "taskCount": 1,
-  "tasks": [
-    {
-      "name": "Daily Cleanup",
-      "schedule": "Every day at 3:00 AM (America/Argentina/Buenos_Aires)",
-      "isRunning": true
-    }
-  ]
-}
-
-[INFO] Running scheduled cleanup tasks...
-[INFO] Starting cleanup of unverified accounts
-[WARN] Deleting expired unverified accounts
-{
-  "count": 12,
-  "accounts": [...]
-}
-[INFO] Successfully cleaned up expired unverified accounts
-{
-  "deletedCount": 12
-}
-
-[INFO] Scheduled cleanup completed successfully
-{
-  "unverifiedAccounts": 12,
-  "emailVerifications": 35,
-  "total": 47
-}
-```
-
-### Logs de Reclamación de Email
-
-```
-[INFO] Attempting to register with recent unverified email - resending verification
-{
-  "email": "alice@example.com",
-  "existingUserId": 123,
-  "accountAge": "240 minutes"
-}
-
-[WARN] Reclaiming email from old unverified account
-{
-  "email": "alice@example.com",
-  "oldUserId": 456,
-  "accountAge": "28 hours",
-  "oldUsername": "usuario_error"
-}
-
-[INFO] Successfully reclaimed email from old unverified account
-{
-  "email": "alice@example.com",
-  "oldUserId": 456
-}
-```
-
----
-
-## Apéndice D: Diagramas de Arquitectura
-
-### Arquitectura del Sistema de Limpieza
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│                        APP STARTUP                            │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ app.ts                                                  │  │
-│  │  - Initialize EmailService                             │  │
-│  │  - Initialize SchedulerService                         │  │
-│  │    └─> schedulerService.start()                        │  │
-│  └────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│                    SCHEDULER SERVICE                          │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ Cron Job: 0 3 * * * (Daily at 3 AM)                   │  │
-│  │  └─> cleanupService.runAllCleanupTasks()              │  │
-│  └────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│                    CLEANUP SERVICE                            │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ cleanExpiredUnverifiedAccounts(7)                      │  │
-│  │  - Find users: { emailVerified: false, age > 7 days } │  │
-│  │  - Delete EmailVerification records                    │  │
-│  │  - Delete User records                                 │  │
-│  │  - Log results                                         │  │
-│  │                                                         │  │
-│  │ cleanExpiredEmailVerifications()                       │  │
-│  │  - Find verifications: { expired, status: PENDING }   │  │
-│  │  - Delete verification records                         │  │
-│  │  - Log results                                         │  │
-│  └────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│                       DATABASE                                │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │ Users Table                                            │  │
-│  │  - Delete unverified users > 7 days                    │  │
-│  │                                                         │  │
-│  │ EmailVerifications Table                               │  │
-│  │  - Delete expired verifications                        │  │
-│  └────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────┘
-```
-
-### Flujo de Registro con Reclamación
-
-```
-┌─────────────┐
-│   Cliente   │
-└──────┬──────┘
-       │ POST /api/auth/register
-       │ { email: "alice@example.com", ... }
-       ▼
-┌─────────────────────────────────────────────┐
-│      AuthController.register()              │
-└──────┬──────────────────────────────────────┘
-       │
-       ▼
-┌─────────────────────────────────────────────┐
-│ Find existing user with email              │
-└──────┬──────────────────────────────────────┘
-       │
-       ├──> Usuario NO existe
-       │    └─> Crear usuario normalmente ✅
-       │
-       └──> Usuario SÍ existe
-            │
-            ├──> emailVerified = true
-            │    └─> Return 409 Conflict ❌
-            │
-            └──> emailVerified = false
-                 │
-                 ├──> accountAge < 24h
-                 │    ├─> Find/Create EmailVerification
-                 │    ├─> Resend verification email
-                 │    └─> Return 409 + "Email resent" ⚠️
-                 │
-                 └──> accountAge > 24h
-                      ├─> Delete old EmailVerifications
-                      ├─> Delete old User
-                      ├─> Create new User
-                      ├─> Create new EmailVerification
-                      ├─> Send verification email
-                      └─> Return 201 Created ✅
-```
-
----
+## Corrección de Errores
+
+### 1. Email Service Initialization Failures
+
+- **Error:** SendGrid no inicializaba en producción a pesar de tener variables correctas
+- **Causa raíz:** Variables SMTP mezcladas con SendGrid causaban fallo en validación Zod
+- **Solución:**
+  1. Remover variables SMTP de Render
+  2. Hacer campos `auth.user` y `auth.pass` opcionales en schema
+  3. Agregar endpoint de debug para diagnóstico
+
+### 2. Output Directory Vercel
+
+- **Error:** Build fallaba con "No Output Directory named 'browser' found"
+- **Causa:** Angular 17 genera output en `dist/app-tgs/browser` no en `dist/browser`
+- **Solución:** Actualizar `vercel.json` con `outputDirectory: "dist/app-tgs/browser"`
+
+### 3. CORS Issues en Producción
+
+- **Error:** Frontend en Vercel no podía comunicarse con backend
+- **Solución:** Actualizar `ALLOWED_ORIGINS` en Render con URL de Vercel
+- **Variable:** `ALLOWED_ORIGINS=https://garrsys.vercel.app`
+
+## Impacto en el Proyecto
+
+### Beneficios del Deployment
+
+- **Aplicación 100% funcional en la nube:** Backend, frontend y base de datos deployados
+- **Email verification funcional:** Usuarios pueden registrarse y verificar cuentas
+- **Costo: $0 USD:** Todo deployado en free tiers (Render + Vercel + Neon.tech)
+- **Escalabilidad:** Arquitectura lista para escalar con planes pagos
+- **Profesionalismo:** URLs públicas para demostración
+
+### Mejoras en Mantenibilidad
+
+- **Configuración clara:** Archivos .env organizados por ambiente
+- **Documentación limpia:** Solo documentos necesarios mantenidos
+- **SQL consistente:** Todos los usuarios con rol USER base
+- **Código organizado:** Eliminación de archivos redundantes
+
+### Ventajas para Desarrollo
+
+- **Ambientes separados:** Desarrollo local vs Producción claramente diferenciados
+- **Testing simplificado:** Mailtrap para desarrollo, SendGrid para producción
+- **Debug mejorado:** Endpoint temporal para diagnóstico de email
+- **Onboarding rápido:** `.env.example` con instrucciones claras
+
+## Próximos Pasos Sugeridos
+
+1. **Remover endpoint de debug temporal:** El endpoint `/health/email-debug` es temporal y debe ser removido en producción después de verificar estabilidad
+2. **Monitorear uso de SendGrid:** Verificar límites del free tier (100 emails/día)
+3. **Configurar dominio personalizado:** Considerar comprar dominio para URLs más profesionales
+4. **Implementar CI/CD:** Automatizar deployments con GitHub Actions
+5. **Agregar monitoring:** Configurar alertas en Render para downtime
+6. **Backup de base de datos:** Configurar backups automáticos en Neon.tech
+7. **Performance monitoring:** Implementar APM para tracking de performance
+8. **SEO optimization:** Mejorar meta tags en frontend para búsquedas
+9. **SSL verification:** Asegurar que todos los endpoints usan HTTPS
+10. **Rate limiting en producción:** Configurar Redis Cloud para rate limiting distribuido
+
+## Estadísticas del Proyecto
+
+### Deployment
+- **Tiempo total de deployment:** ~4 horas (incluyendo troubleshooting)
+- **Servicios configurados:** 3 (Render, Vercel, Neon.tech)
+- **Problemas resueltos:** 5 críticos (email, CORS, build, database, env vars)
+
+### Limpieza de Proyecto
+- **Archivos .env actualizados:** 3
+- **Archivos .md eliminados:** 4
+- **Líneas de código SQL actualizadas:** 26 usuarios modificados
+- **Variables de entorno removidas de producción:** 4 (SMTP_*)
+- **Commits realizados:** 8
+
+### Email Debug
+- **Endpoint creado:** 1 (`/health/email-debug`)
+- **Iteraciones de debug:** 4
+- **Problemas de email resueltos:** 3 (variables conflictivas, schema validation, re-initialization)
+
+## Archivos Modificados
+
+**Backend (Submodule):**
+- `src/shared/services/email.service.ts` - Schema Zod con auth opcional
+- `src/shared/controllers/health.controller.ts` - Endpoint debug con re-init
+- `src/shared/routes/health.routes.ts` - Ruta email-debug
+- `.env.example` - Simplificado y documentado
+- `render.yaml` - Configuración de deployment
+
+**Infra:**
+- `init-test-data.sql` - Roles USER agregados a todos los usuarios (26 actualizados)
+- `.env` - Simplificado para Docker
+
+**Root:**
+- `.gitignore` - Actualizado si fue necesario
+- Archivos eliminados: 4 .md innecesarios
+
+**Eliminados:**
+- `GIT_SUBMODULES_GUIDE.md`
+- `SAFE_SUBMODULE_UPDATE.md`
+- `VSCODE_EXTENSIONS.md`
+- `infra/.env.production.example`
+- `infra/README.md`
+
+## Commits Realizados
+
+1. `Fix email service schema validation for production without SMTP`
+2. `Add more debug info to email endpoint`
+3. `Capture initialization error in email debug endpoint`
+4. `Clean and organize environment configuration`
+5. `Restore original scripts in package.json`
+6. `Clean and organize project structure`
+7. `Update backend submodule with error capture in email debug`
+8. `Update backend submodule - Restore original scripts`
+
+## URLs de Producción
+
+- **Backend API:** https://tgs-backend-u5xz.onrender.com
+- **Swagger Docs:** https://tgs-backend-u5xz.onrender.com/api-docs
+- **Frontend App:** https://garrsys.vercel.app
+- **Health Check:** https://tgs-backend-u5xz.onrender.com/health
+- **Email Debug (temporal):** https://tgs-backend-u5xz.onrender.com/health/email-debug
 
 ## Título para el Commit
 
 ```
-feat(cleanup): implement automated email reclaim system
+feat(deployment): complete cloud deployment with SendGrid email fix and project cleanup
 
-- Add CleanupService for removing expired unverified accounts (7 days)
-- Add smart email reclaim logic in register (<24h resend, >24h delete)
-- Add SchedulerService with daily cron job (3 AM Argentina time)
-- Add admin endpoints for manual cleanup operations
-- Improve email templates with reclaim policy information
-- Add comprehensive logging for audit trail
-- Install node-cron@3.0.3 for task scheduling
+- Deploy backend to Render with Neon.tech PostgreSQL
+- Deploy frontend to Vercel with Angular 17
+- Fix SendGrid email service initialization issues
+- Simplify and organize .env configuration files
+- Update SQL: all users now have USER role + specific role
+- Remove unnecessary documentation files (4 .md files)
+- Add temporary email debug endpoint for diagnostics
+- Clean up production environment variables
+- Verify complete email verification flow end-to-end
 
-BREAKING CHANGES: None
+Deployment URLs:
+- Backend: https://tgs-backend-u5xz.onrender.com
+- Frontend: https://garrsys.vercel.app
+- Database: Neon.tech PostgreSQL (sa-east-1)
+- Emails: SendGrid (100% functional)
 
-Features:
-- Automatic cleanup of unverified accounts older than 7 days
-- Email reclaim: resend if <24h, delete old account if >24h
-- Cron job runs daily at 3 AM (America/Argentina/Buenos_Aires)
-- 5 new admin endpoints: /admin/cleanup/*
-- Enhanced email templates explain reclaim policy
-- Full audit logging of all cleanup operations
-
-API Endpoints Added:
-- GET  /admin/cleanup/scheduler/status
-- GET  /admin/cleanup/preview?daysOld=7
-- POST /admin/cleanup/trigger
-- POST /admin/cleanup/accounts?daysOld=7
-- POST /admin/cleanup/verifications
-
-Files Changed:
-- src/modules/auth/auth.controller.ts (smart reclaim logic)
-- src/shared/services/email.service.ts (improved templates)
-- src/app.ts (scheduler initialization)
-- package.json (node-cron dependency)
-
-Files Added:
-- src/shared/services/cleanup.service.ts
-- src/shared/services/scheduler.service.ts
-- src/shared/controllers/cleanup.controller.ts
-- src/shared/routes/cleanup.routes.ts
-- minuta_Lautaro_09-11-25.md
-
-Resolves: Email blocking issue when users register with wrong email
-Impact: ~95% reduction in "email blocked" support cases
-Testing: Type-check ✅, Manual testing pending
+Total cost: $0 USD (all free tiers)
 ```
+
+## Resumen Ejecutivo
+
+Esta actualización marca un hito importante en el proyecto TGS: **el deployment completo y funcional de la aplicación a servicios cloud en producción**. La aplicación ahora está accesible públicamente en URLs de producción, con todas las funcionalidades críticas operativas, incluyendo autenticación, base de datos, y verificación de email vía SendGrid.
+
+La resolución exitosa de los problemas de email mediante diagnóstico sistemático (sin acceso a logs pagos) demuestra capacidad de troubleshooting efectivo. La limpieza y reorganización del proyecto mejora significativamente la mantenibilidad y facilita el onboarding de nuevos desarrolladores.
+
+El proyecto está ahora en un estado production-ready con arquitectura escalable, configuración clara por ambiente, y costo de operación de $0 USD utilizando planes gratuitos de servicios cloud profesionales.
+
+---
+
+**Preparado por:** Lautaro
+**Fecha de deployment:** 09/11/2025
+**Estado del proyecto:** ✅ PRODUCTION READY
+**Próxima revisión:** Después de monitorear estabilidad en producción (1-2 semanas)

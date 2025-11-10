@@ -1,10 +1,10 @@
-# Guía de Deployment - TGS (100% GRATIS)
+# Guía de Deployment - TGS (The Garrison System)
 
-**Guía para desplegar The Garrison System completamente GRATIS** usando servicios con tier gratuito.
+**Guía completa para desplegar The Garrison System** tanto de forma gratuita en la nube como usando Docker.
 
 ---
 
-## 🎯 Arquitectura de Deployment Gratuito
+## 🎯 Arquitectura de Deployment
 
 ```
 ┌─────────────────┐
@@ -32,29 +32,35 @@
 
 ---
 
+## 📌 Estado Actual del Proyecto
+
+✅ **El proyecto YA está configurado con PostgreSQL**
+- Base de datos: PostgreSQL 16
+- ORM: MikroORM con driver PostgreSQL
+- Docker: Configurado y listo para usar
+- Archivos Dockerfile para backend y frontend disponibles
+
+---
+
 ## ⚠️ Consideraciones Importantes
 
-### ¿Por qué PostgreSQL en lugar de MySQL?
+### Base de Datos PostgreSQL
 
-**Tu proyecto usa MySQL**, pero los servicios gratuitos ofrecen PostgreSQL:
+El proyecto usa PostgreSQL porque:
+- Los servicios gratuitos ofrecen PostgreSQL (no MySQL)
+- Mejor soporte para datos JSON y tipos avanzados
+- Más robusto para aplicaciones en producción
 
-**Opciones:**
-1. ✅ **Migrar a PostgreSQL** (Recomendado - 30 min de trabajo)
-   - Neon.tech: PostgreSQL gratis con 3GB
-   - Cambio mínimo en MikroORM (solo driver)
-   - Compatible con todo tu código
+### Variables de Entorno
 
-2. ❌ **Mantener MySQL**
-   - No hay opciones gratuitas confiables
-   - PlanetScale eliminó tier gratuito
-   - Railway/Render cobran por MySQL
+**Para deployment en la nube:**
+- Los servicios (Vercel, Render) tienen su propia configuración de variables
+- NO necesitas crear archivos `.env.production` manualmente
+- Configuras las variables directamente en cada plataforma
 
-### ¿Necesito .env.production?
-
-**NO es estrictamente necesario** para deployment:
-- Los servicios (Vercel, Render, etc.) tienen su propia configuración de variables de entorno
-- `.env.production` es solo para Docker local en modo producción
-- Para deploy real, configuras las variables en cada plataforma
+**Para Docker local:**
+- Usa `.env.development` para desarrollo
+- Las variables de entorno se configuran en `docker-compose.yml`
 
 ---
 
@@ -71,58 +77,13 @@
 
 ---
 
-## 🚀 Deployment Paso a Paso
+## 🚀 Deployment en la Nube - Paso a Paso
 
-### PASO 1: Migrar de MySQL a PostgreSQL
-
-**¿Por qué?** Los servicios gratuitos no ofrecen MySQL.
-
-**Cambios necesarios:**
-
-#### A. Backend - Instalar driver PostgreSQL
-
-```bash
-cd apps/backend
-pnpm add @mikro-orm/postgresql pg
-pnpm remove @mikro-orm/mysql
-```
-
-#### B. Actualizar configuración MikroORM
-
-**Archivo:** `apps/backend/src/config/mikro-orm.config.ts`
-
-```typescript
-// Antes (MySQL)
-import { defineConfig } from '@mikro-orm/mysql';
-
-// Después (PostgreSQL)
-import { defineConfig } from '@mikro-orm/postgresql';
-
-export default defineConfig({
-  // ... resto de la config sin cambios
-  type: 'postgresql', // Cambiar de 'mysql' a 'postgresql'
-});
-```
-
-#### C. Variables de entorno
-
-```env
-# Antes (MySQL)
-DB_HOST=localhost
-DB_PORT=3307
-DB_USER=dsw
-DB_PASSWORD=dsw
-DB_NAME=tpdesarrollo
-
-# Después (PostgreSQL) - Neon.tech te dará esto
-DATABASE_URL=postgresql://user:pass@ep-example.us-east-2.aws.neon.tech/tpdesarrollo?sslmode=require
-```
-
-**Nota:** El resto de tu código NO cambia. MikroORM es compatible con ambos.
+Esta sección cubre el deployment usando servicios gratuitos en la nube.
 
 ---
 
-### PASO 2: Database - Neon.tech (PostgreSQL Gratis)
+### PASO 1: Database - Neon.tech (PostgreSQL Gratis)
 
 #### 1. Crear cuenta
 - Ve a https://neon.tech
@@ -145,7 +106,7 @@ Guarda esta URL, la usarás en el backend.
 
 ---
 
-### PASO 3: Redis - Upstash (Gratis)
+### PASO 2: Redis - Upstash (Gratis)
 
 #### 1. Crear cuenta
 - Ve a https://upstash.com
@@ -169,7 +130,7 @@ Password: AaBbCc123XxYyZz==
 
 ---
 
-### PASO 4: Backend - Render (Gratis)
+### PASO 3: Backend - Render (Gratis)
 
 #### 1. Preparar repositorio
 
@@ -267,7 +228,7 @@ TRUST_PROXY=true
 
 ---
 
-### PASO 5: Frontend - Vercel (Gratis)
+### PASO 4: Frontend - Vercel (Gratis)
 
 #### 1. Preparar configuración
 
@@ -344,7 +305,7 @@ Click "Save" (Render re-deploya automáticamente)
 
 ---
 
-### PASO 6: Migración de Base de Datos
+### PASO 5: Migración de Base de Datos
 
 Una vez que todo esté deployado:
 
@@ -510,9 +471,8 @@ curl https://tu-backend.onrender.com/health
 
 ---
 
-## 📝 Checklist de Deployment
+## 📝 Checklist de Deployment en la Nube
 
-- [ ] Migrar de MySQL a PostgreSQL en código
 - [ ] Crear cuenta en Neon.tech y obtener DATABASE_URL
 - [ ] Crear cuenta en Upstash y obtener credenciales Redis
 - [ ] Crear cuenta en Render y configurar backend
@@ -528,42 +488,399 @@ curl https://tu-backend.onrender.com/health
 
 ---
 
-## 🎯 Tiempo Estimado
+## 🎯 Tiempo Estimado (Deployment en la Nube)
 
-- Migración MySQL → PostgreSQL: **30 minutos**
 - Setup de servicios (Neon, Upstash, Render, Vercel): **1 hora**
 - Configuración y testing: **30 minutos**
-- **TOTAL: 2 horas**
+- **TOTAL: 1.5 horas**
+
+---
+
+## 🐳 Deployment con Docker
+
+Esta sección explica cómo deployar TGS usando Docker y Docker Compose.
+
+### ¿Qué es Docker y por qué usarlo?
+
+**Docker** es una plataforma que empaqueta tu aplicación y todas sus dependencias en "contenedores". Esto garantiza que tu aplicación funcione exactamente igual en cualquier lugar: tu computadora, un servidor, o la nube.
+
+**Ventajas de Docker para este proyecto:**
+- ✅ Todo el stack (frontend, backend, database, Redis) en un solo comando
+- ✅ Configuración reproducible y consistente
+- ✅ Fácil de deployar en cualquier servidor con Docker
+- ✅ Aislamiento: no interfiere con otros proyectos
+- ✅ No necesitas instalar PostgreSQL o Redis localmente
+
+### Arquitectura Docker del Proyecto
+
+```
+┌─────────────────────────────────────────┐
+│         Docker Compose                  │
+├─────────────────────────────────────────┤
+│                                         │
+│  ┌──────────┐  ┌──────────┐           │
+│  │ Frontend │  │ Backend  │           │
+│  │ (Nginx)  │  │ (Node.js)│           │
+│  │ Port: 80 │  │ Port:3000│           │
+│  └──────────┘  └──────────┘           │
+│       │              │                  │
+│       │              ↓                  │
+│       │      ┌──────────────┐          │
+│       │      │  PostgreSQL  │          │
+│       │      │  Port: 5432  │          │
+│       │      └──────────────┘          │
+│       │              │                  │
+│       │              ↓                  │
+│       │      ┌──────────────┐          │
+│       │      │    Redis     │          │
+│       │      │  Port: 6379  │          │
+│       └──────┴──────────────┘          │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### Configuración Actual del Proyecto
+
+Tu proyecto **ya tiene todo configurado**:
+- ✅ `docker-compose.yml` en la carpeta `infra/`
+- ✅ `Dockerfile` para backend en `apps/backend/`
+- ✅ `Dockerfile` para frontend en `apps/frontend/`
+- ✅ PostgreSQL 16 configurado
+- ✅ Redis 7 configurado
+
+### Modos de Deployment con Docker
+
+El proyecto soporta 2 modos:
+
+#### 1. Modo Desarrollo (solo infraestructura)
+```bash
+cd infra
+docker compose up -d
+```
+- Levanta **solo PostgreSQL + Redis**
+- Backend y frontend corren en tu máquina (con `pnpm start:dev`)
+- Ideal para desarrollo activo con hot-reload
+
+#### 2. Modo Producción (stack completo)
+```bash
+cd infra
+docker compose --profile production up -d
+```
+- Levanta **todo**: Frontend + Backend + PostgreSQL + Redis
+- Backend optimizado (compilado con TypeScript)
+- Frontend servido con Nginx
+- Ideal para testing de producción o deployment real
+
+### Paso a Paso: Deployment con Docker (Modo Producción)
+
+#### PASO 1: Verificar requisitos
+
+Necesitas tener instalado:
+- Docker Desktop (Windows/Mac) o Docker Engine (Linux)
+- Docker Compose (incluido en Docker Desktop)
+
+Verificar instalación:
+```bash
+docker --version       # Debe mostrar v20.10 o superior
+docker compose version # Debe mostrar v2.0 o superior
+```
+
+#### PASO 2: Configurar variables de entorno (opcional)
+
+El proyecto usa valores por defecto seguros. Si quieres personalizarlos, crea un archivo `.env` en la carpeta `infra/`:
+
+```bash
+cd infra
+```
+
+**Archivo: `infra/.env`** (opcional, los defaults funcionan bien)
+```env
+# PostgreSQL
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=tpdesarrollo
+
+# JWT
+JWT_SECRET=Th1sIsMyN3wSupaDupaS3cureS3cr3ttt
+JWT_EXPIRES_IN=15m
+
+# Redis
+REDIS_ENABLED=true
+
+# Security
+ALLOWED_ORIGINS=http://localhost
+TRUST_PROXY=true
+
+# Email (Mailtrap para testing)
+SMTP_HOST=sandbox.smtp.mailtrap.io
+SMTP_PORT=2525
+SMTP_USER=tu-usuario-mailtrap
+SMTP_PASS=tu-password-mailtrap
+SMTP_FROM=noreply@tgs-system.com
+
+# Frontend
+FRONTEND_URL=http://localhost
+EMAIL_VERIFICATION_REQUIRED=true
+```
+
+#### PASO 3: Levantar el stack completo
+
+```bash
+# Desde la carpeta infra/
+cd infra
+
+# Levantar todo el stack (PostgreSQL + Redis + Backend + Frontend)
+docker compose --profile production up -d
+
+# Ver los logs en tiempo real
+docker compose logs -f
+```
+
+**Esto hace lo siguiente:**
+1. Construye las imágenes Docker de backend y frontend
+2. Levanta PostgreSQL 16 en puerto 5432
+3. Levanta Redis 7 en puerto 6379
+4. Compila y levanta el backend en puerto 3000
+5. Compila y levanta el frontend en puerto 80
+
+#### PASO 4: Esperar a que todo esté listo
+
+Docker tiene health checks configurados. Puedes ver el estado con:
+
+```bash
+docker compose ps
+```
+
+Espera hasta que todos los servicios muestren `healthy`:
+```
+NAME                   STATUS
+postgres-dsw-tgs       Up (healthy)
+redis-dsw-tgs          Up (healthy)
+tgs-backend-prod       Up (healthy)
+tgs-frontend-prod      Up (healthy)
+```
+
+Esto puede tomar 1-2 minutos en el primer inicio.
+
+#### PASO 5: Ejecutar migraciones de base de datos
+
+```bash
+# Opción A: Desde tu máquina (conectándote al PostgreSQL de Docker)
+cd apps/backend
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/tpdesarrollo"
+pnpm mikro-orm migration:up
+
+# Opción B: Desde dentro del contenedor backend
+docker exec tgs-backend-prod node dist/migrations/run-migrations.js
+```
+
+#### PASO 6: Cargar datos de prueba (opcional)
+
+```bash
+# Opción A: Desde tu máquina
+cd apps/backend
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/tpdesarrollo"
+node scripts/seed-test-data.mjs
+
+# Opción B: Desde dentro del contenedor
+docker exec tgs-backend-prod node scripts/seed-test-data.mjs
+```
+
+#### PASO 7: Acceder a la aplicación
+
+¡Listo! Ahora puedes acceder:
+
+- **Frontend**: http://localhost
+- **Backend API**: http://localhost:3000
+- **API Docs (Swagger)**: http://localhost:3000/api/docs
+
+### Comandos Útiles de Docker
+
+```bash
+# Ver todos los contenedores corriendo
+docker compose ps
+
+# Ver logs de todos los servicios
+docker compose logs -f
+
+# Ver logs de un servicio específico
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f postgres
+
+# Detener todo
+docker compose --profile production down
+
+# Detener y borrar volúmenes (CUIDADO: borra la base de datos)
+docker compose --profile production down -v
+
+# Reiniciar un servicio específico
+docker compose restart backend
+
+# Reconstruir imágenes (después de cambios en código)
+docker compose --profile production up -d --build
+
+# Acceder a la shell de un contenedor
+docker exec -it tgs-backend-prod sh
+docker exec -it postgres-dsw-tgs psql -U postgres -d tpdesarrollo
+```
+
+### Troubleshooting con Docker
+
+#### El backend no inicia
+```bash
+# Ver logs detallados
+docker compose logs backend
+
+# Verificar que PostgreSQL esté healthy
+docker compose ps postgres
+
+# Reintentar
+docker compose restart backend
+```
+
+#### Error "port already in use"
+```bash
+# Algún otro servicio está usando el puerto
+# Opción 1: Detener el otro servicio
+# Opción 2: Cambiar el puerto en docker-compose.yml
+
+# Por ejemplo, cambiar frontend de puerto 80 a 8080:
+# En docker-compose.yml, línea ~122:
+# ports:
+#   - "8080:80"
+```
+
+#### La base de datos está vacía
+```bash
+# Verificar que las migraciones corrieron
+docker exec tgs-backend-prod ls dist/migrations/
+
+# Correr migraciones manualmente
+docker exec tgs-backend-prod node dist/migrations/run-migrations.js
+```
+
+#### Cambios en el código no se reflejan
+```bash
+# Reconstruir las imágenes
+docker compose --profile production up -d --build
+
+# Si sigue sin funcionar, limpiar todo y empezar de nuevo
+docker compose --profile production down
+docker compose --profile production up -d --build
+```
+
+### Deployment en un Servidor con Docker
+
+Si quieres deployar en un VPS (Virtual Private Server) como DigitalOcean, AWS EC2, o Linode:
+
+#### 1. Requisitos del servidor
+- Ubuntu 22.04 o similar
+- Mínimo 2GB RAM
+- Docker y Docker Compose instalados
+
+#### 2. Preparar el servidor
+```bash
+# SSH al servidor
+ssh tu-usuario@tu-servidor.com
+
+# Instalar Docker (Ubuntu)
+sudo apt update
+sudo apt install docker.io docker-compose-v2 -y
+sudo systemctl enable docker
+sudo systemctl start docker
+
+# Agregar tu usuario al grupo docker
+sudo usermod -aG docker $USER
+```
+
+#### 3. Clonar el repositorio
+```bash
+git clone https://github.com/tu-usuario/tu-repo.git
+cd tu-repo
+```
+
+#### 4. Configurar variables de entorno
+```bash
+cd infra
+nano .env  # Editar con tus valores de producción
+```
+
+#### 5. Levantar el stack
+```bash
+docker compose --profile production up -d
+```
+
+#### 6. Configurar dominio y SSL (opcional)
+
+Si tienes un dominio, puedes agregar Nginx como reverse proxy y usar Let's Encrypt para SSL:
+
+```bash
+# Instalar certbot
+sudo apt install certbot python3-certbot-nginx -y
+
+# Obtener certificado SSL
+sudo certbot --nginx -d tu-dominio.com
+```
+
+### Comparación: Docker vs Deployment en la Nube
+
+| Aspecto | Docker (VPS) | Nube (Vercel + Render) |
+|---------|--------------|------------------------|
+| **Costo** | ~$5-12/mes (VPS) | $0 (tier gratuito) |
+| **Setup** | Más técnico | Más simple (click y listo) |
+| **Control** | Control total | Limitado |
+| **Escalabilidad** | Manual | Automática |
+| **Mantenimiento** | Tú lo haces | Lo hace el proveedor |
+| **Sleeping** | Nunca duerme | Backend duerme tras 15 min (Render free) |
+| **Ideal para** | Producción real, proyecto grande | MVP, demo, evaluación académica |
 
 ---
 
 ## 🔗 Links Útiles
 
+**Deployment en la Nube:**
 - **Neon.tech**: https://neon.tech/docs/get-started-with-neon
 - **Render**: https://render.com/docs/deploy-node-express-app
 - **Upstash**: https://upstash.com/docs/redis/overall/getstarted
 - **Vercel**: https://vercel.com/docs/frameworks/angular
 - **Resend** (email): https://resend.com/docs/send-with-nodejs
 
+**Docker:**
+- **Docker Desktop**: https://www.docker.com/products/docker-desktop
+- **Docker Compose**: https://docs.docker.com/compose/
+- **Docker Hub**: https://hub.docker.com/
+
 ---
 
-## 💡 Alternativas
+## 💡 Alternativas y Opciones Adicionales
 
-Si no quieres migrar a PostgreSQL:
+### Opción 1: Otros servicios de deployment en la nube
 
-### Opción 1: Mantener MySQL Local + Ngrok (Solo para Demo)
-```bash
-# Exponer tu MySQL local temporalmente
-ngrok tcp 3307
+**Railway** (crédito limitado)
+- $5 de crédito gratis mensual
+- PostgreSQL y Redis disponibles
+- Buena integración con GitHub
+- Pricing por uso después del crédito
 
-# Usar la URL en Render (solo para demo, NO para producción)
-```
+**Fly.io** (tier gratuito limitado)
+- 3 VMs pequeñas gratis
+- PostgreSQL gratis (3GB)
+- Más control que Vercel/Render
+- Requiere más configuración
 
-### Opción 2: Railway (MySQL pero con crédito limitado)
-- $5 de crédito gratis
-- MySQL disponible
-- Suficiente para ~2-3 semanas
-- Bueno si necesitas MySQL urgente para presentar
+### Opción 2: Servidor VPS propio
+
+**DigitalOcean Droplet** (~$6/mes)
+- Control total del servidor
+- Usa Docker para deployar
+- Sin restricciones
+- Requiere mantenimiento
+
+**Linode/Vultr** (~$5/mes)
+- Similar a DigitalOcean
+- Buena relación precio/calidad
+- Control total
 
 ---
 

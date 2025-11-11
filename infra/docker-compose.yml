@@ -78,7 +78,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       # Security
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:4200,http://localhost:80,http://localhost}
       TRUST_PROXY: ${TRUST_PROXY:-true}
       ENABLE_SECURITY_HEADERS: true
       ENABLE_RATE_LIMITING: true
@@ -89,7 +89,7 @@ services:
       SMTP_PASS: ${SMTP_PASS}
       SMTP_FROM: ${SMTP_FROM:-noreply@tgs-system.com}
       # Frontend
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4200}
       EMAIL_VERIFICATION_REQUIRED: ${EMAIL_VERIFICATION_REQUIRED:-true}
       # Docker flag
       DOCKER_CONTAINER: true

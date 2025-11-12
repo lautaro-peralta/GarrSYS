@@ -12,7 +12,7 @@
 
 - **Frontend:** [Tsplivalo/TGS-Frontend](https://github.com/Tsplivalo/TGS-Frontend)
 - **Backend:** [lautaro-peralta/TGS-Backend](https://github.com/lautaro-peralta/TGS-Backend)
-- **Repositorio Principal:** [lautaro-peralta/TP-Desarrollo-de-Software](https://github.com/lautaro-peralta/TP-Desarrollo-de-Software)
+- **Repositorio Principal:** [lautaro-peralta/GarrSYS](https://github.com/lautaro-peralta/GarrSYS)
 
 ## The Garrison System
 

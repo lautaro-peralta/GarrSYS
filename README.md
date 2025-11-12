@@ -33,8 +33,8 @@ The Garrison System es un sistema de ventas y gestión de recursos ambientado en
 
 ```bash
 # 1. Clonar con submódulos
-git clone --recurse-submodules https://github.com/Lau-prog/TP-Desarrollo-de-Software.git
-cd TP-Desarrollo-de-Software
+git clone --recurse-submodules https://github.com/Lau-prog/GarrSYS.git
+cd GarrSYS
 
 # 2. Levantar infraestructura (PostgreSQL + Redis) con Docker
 cd infra
@@ -133,8 +133,8 @@ TP-Desarrollo-de-Software/
 #### 1. Clonar el repositorio con submódulos
 
 ```bash
-git clone --recurse-submodules https://github.com/Lau-prog/TP-Desarrollo-de-Software.git
-cd TP-Desarrollo-de-Software
+git clone --recurse-submodules https://github.com/Lau-prog/GarrSYS.git
+cd GarrSYS
 ```
 
 #### 2. Levantar infraestructura (PostgreSQL + Redis) con Docker
@@ -377,7 +377,7 @@ El sistema está desplegado en la nube utilizando una arquitectura distribuida:
 
 ## 🔗 Repositorios
 
-- **Principal:** [lautaro-peralta/TP-Desarrollo-de-Software](https://github.com/Lau-prog/TP-Desarrollo-de-Software)
+- **Principal:** [lautaro-peralta/GarrSYS](https://github.com/Lau-prog/GarrSYS)
 - **Backend:** [lautaro-peralta/TGS-Backend](https://github.com/lautaro-peralta/TGS-Backend)
 - **Frontend:** [Tsplivalo/TGS-Frontend](https://github.com/Tsplivalo/TGS-Frontend)
 

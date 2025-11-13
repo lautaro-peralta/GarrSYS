@@ -13,7 +13,7 @@ jobs:
       - name: Checkout main repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_SYNC }}
           submodules: true
           fetch-depth: 0
 
@@ -34,7 +34,7 @@ jobs:
       - name: Crear Pull Request automático
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_SYNC }}
           branch: ci/update-submodules-${{ github.run_id }}
           base: main
           title: "chore: update submodule references ($(date +'%Y-%m-%d'))"

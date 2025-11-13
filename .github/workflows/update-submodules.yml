@@ -1,92 +1,52 @@
-name: Update Git Submodules
+name: Update Submodules
 
 on:
   schedule:
-    - cron: "0 4 * * *" # Corre todos los días a las 4 AM UTC
-  workflow_dispatch:
-
-permissions:
-  contents: write
-  pull-requests: write
+    - cron: "0 18 * * *" # Todos los días a las 18:00 UTC (15:00 Argentina aprox)
+  workflow_dispatch: # Permite ejecución manual
 
 jobs:
   update-submodules:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout main repository (with submodules)
+      - name: Checkout main repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT_SYNC }}
+          token: ${{ secrets.PAT_TOKEN }}
           submodules: true
           fetch-depth: 0
 
-      - name: Configure Git identity
+      - name: Configurar git
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Update submodules
+      - name: Actualizar submódulos a los últimos commits
         run: |
-          echo "🔄 Actualizando submódulos..."
           git submodule update --remote --recursive
-          echo "✅ Submódulos actualizados correctamente."
-
-      - name: Check for changes
-        id: git-status
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "changes=false" >> $GITHUB_OUTPUT
+          git add .
+          if git diff --cached --quiet; then
+            echo "No hay cambios en los submódulos."
+            exit 0
           fi
 
-      - name: Create branch for update
-        if: steps.git-status.outputs.changes == 'true'
-        run: |
-          BRANCH="ci/update-submodules-$(date +%Y%m%d-%H%M%S)"
-          echo "branch=$BRANCH" >> $GITHUB_ENV
-          git checkout -b $BRANCH
-          git add apps/frontend apps/backend
-          git commit -m "chore: update submodule references ($(date +%Y-%m-%d))"
-
-      - name: Push branch
-        if: steps.git-status.outputs.changes == 'true'
-        env:
-          TOKEN: ${{ secrets.PAT_SYNC }}
-        run: |
-          git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git $BRANCH
-
-      - name: Create Pull Request
-        id: cpr
-        if: steps.git-status.outputs.changes == 'true'
+      - name: Crear Pull Request automático
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.PAT_SYNC }}
-          branch: ${{ env.branch }}
+          token: ${{ secrets.PAT_TOKEN }}
+          branch: ci/update-submodules-${{ github.run_id }}
           base: main
-          title: "chore: update submodule references ($(date +%Y-%m-%d))"
+          title: "chore: update submodule references ($(date +'%Y-%m-%d'))"
           body: |
-            🤖 Actualización automática de referencias de submódulos:
+            🤖 **Actualización automática de referencias de submódulos**
 
-            - `apps/frontend` → Últimos cambios desde `Tsplivalo/TGS-Frontend`
-            - `apps/backend` → Últimos cambios desde `lautaro-peralta/TGS-Backend`
+            - `apps/frontend` → Últimos cambios desde [`Tsplivalo/TGS-Frontend`](https://github.com/Tsplivalo/TGS-Frontend)
+            - `apps/backend` → Últimos cambios desde [`lautaro-peralta/TGS-Backend`](https://github.com/lautaro-peralta/TGS-Backend)
 
             _Este pull request fue generado automáticamente por GitHub Actions._
-          labels: auto-merge
-
-      - name: Enable auto-merge
-        if: steps.git-status.outputs.changes == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.PAT_SYNC }}
-        run: |
-          gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --merge --auto --delete-branch || \
-          echo "ℹ️ No se pudo activar auto-merge (quizás ya estaba activado o hay conflictos)."
-
-      - name: Log result
-        run: |
-          if [ "${{ steps.git-status.outputs.changes }}" = "true" ]; then
-            echo "✅ Pull request creado y auto-merge activado (si no hay conflictos)."
-          else
-            echo "ℹ️ No hay cambios en submódulos."
-          fi
+          commit-message: "[create-pull-request] automated submodule update"
+          committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          author: "lautaro-peralta <205333171+lautaro-peralta@users.noreply.github.com>"
+          delete-branch: true
+          signoff: false

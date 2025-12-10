@@ -31,13 +31,16 @@ jobs:
             exit 0
           fi
 
+      - name: Set date
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
       - name: Crear Pull Request automático
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PAT_SYNC }}
           branch: ci/update-submodules-${{ github.run_id }}
           base: main
-          title: "chore: update submodule references ($(date +'%Y-%m-%d'))"
+          title: "chore: update submodule references (${{ env.DATE }})"
           body: |
             🤖 **Actualización automática de referencias de submódulos**
 

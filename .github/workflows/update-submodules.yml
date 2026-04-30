@@ -2,39 +2,50 @@ name: Update Submodules
 
 on:
   schedule:
-    - cron: "0 18 * * *" # Todos los días a las 18:00 UTC (15:00 Argentina aprox)
-  workflow_dispatch: # Permite ejecución manual
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   update-submodules:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout main repo
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT_SYNC }}
-          submodules: true
+          submodules: recursive
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Configurar git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Actualizar submódulos a los últimos commits
+      - name: Actualizar submódulos y detectar cambios
+        id: check_changes # ID clave para referenciarlo después
         run: |
           git submodule update --remote --recursive
           git add .
           if git diff --cached --quiet; then
+            echo "changes_detected=false" >> $GITHUB_OUTPUT
             echo "No hay cambios en los submódulos."
-            exit 0
+          else
+            echo "changes_detected=true" >> $GITHUB_OUTPUT
+            echo "Se detectaron cambios en los submódulos."
           fi
 
       - name: Set date
+        if: steps.check_changes.outputs.changes_detected == 'true'
         run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Crear Pull Request automático
+        # Esta línea es la que hace la magia:
+        if: steps.check_changes.outputs.changes_detected == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PAT_SYNC }}
@@ -52,4 +63,3 @@ jobs:
           committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
           author: "lautaro-peralta <205333171+lautaro-peralta@users.noreply.github.com>"
           delete-branch: true
-          signoff: false

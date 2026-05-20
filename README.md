@@ -27,13 +27,15 @@ The Garrison System es un sistema de ventas y gestión de recursos ambientado en
 
 ## 🚀 Inicio Rápido
 
+Recomendamos para una experiencia de usuario más cómoda, simplificada y rápida, ingresar al sitio web: https://garrsys.vercel.app
+
 ### Desarrollo Local
 
 **Configuración simplificada con Docker para la infraestructura:**
 
 ```bash
 # 1. Clonar con submódulos
-git clone --recurse-submodules https://github.com/Lau-prog/GarrSYS.git
+git clone --recurse-submodules https://github.com/lautaro-peralta/GarrSYS.git
 cd GarrSYS
 
 # 2. Levantar infraestructura (PostgreSQL + Redis) con Docker
@@ -133,7 +135,7 @@ TP-Desarrollo-de-Software/
 #### 1. Clonar el repositorio con submódulos
 
 ```bash
-git clone --recurse-submodules https://github.com/Lau-prog/GarrSYS.git
+git clone --recurse-submodules https://github.com/lautaro-peralta/GarrSYS.git
 cd GarrSYS
 ```
 
@@ -206,7 +208,7 @@ cd infra
 docker compose ps
 ```
 
-Deberías ver los servicios `mysql` y `redis` como "healthy" o "running".
+Deberías ver los servicios `postgres` y `redis` como "healthy" o "running".
 
 #### 2. Iniciar el Backend
 
@@ -377,7 +379,7 @@ El sistema está desplegado en la nube utilizando una arquitectura distribuida:
 
 ## 🔗 Repositorios
 
-- **Principal:** [lautaro-peralta/GarrSYS](https://github.com/Lau-prog/GarrSYS)
+- **Principal:** [lautaro-peralta/GarrSYS](https://github.com/lautaro-peralta/GarrSYS)
 - **Backend:** [lautaro-peralta/TGS-Backend](https://github.com/lautaro-peralta/TGS-Backend)
 - **Frontend:** [Tsplivalo/TGS-Frontend](https://github.com/Tsplivalo/TGS-Frontend)
 

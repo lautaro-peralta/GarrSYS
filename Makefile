@@ -39,7 +39,7 @@ status: ## Ver estado de contenedores
 start-prod: ## Levanta stack completo (PostgreSQL + Redis + Backend + Frontend)
 	@if [ ! -f infra/.env.production ]; then \
 		echo "❌ Error: infra/.env.production no existe"; \
-		echo "   Copia infra/.env.production.example y configúralo"; \
+		echo "   Copia infra/.env.example a infra/.env.production y configúralo"; \
 		exit 1; \
 	fi
 	@cd infra && docker compose --profile production --env-file .env.production up -d

@@ -43,7 +43,7 @@ git clone --recurse-submodules https://github.com/lautaro-peralta/GarrSYS.git
 cd GarrSYS
 
 # 2. Setup automático (requiere Docker)
-make setup    # Linux/Mac
+make start    # Linux/Mac
 # O manualmente:
 cd infra && docker compose up -d && cd ..
 
@@ -99,7 +99,7 @@ GarrSYS/
 │   └── frontend/             → Submódulo: SPA (Angular + TypeScript)
 │                             Componentes, servicios, UI
 ├── infra/
-│   └── docker-compose.yml    → PostgreSQL 16 y Redis 7
+│   └── docker-compose.yml    → PostgreSQL 16 y Redis 7 (perfil `production` incompleto, ver nota abajo)
 ├── scripts/
 │   ├── load-test-data.sh    → Script Unix: cargar datos de prueba
 │   └── load-test-data.bat   → Script Windows: cargar datos de prueba
@@ -139,7 +139,7 @@ git submodule status
 - **Documentación API:** Swagger/OpenAPI
 
 ### Frontend
-- **Framework:** Angular 18+
+- **Framework:** Angular 20
 - **Lenguaje:** TypeScript
 - **Estilos:** SCSS
 - **Proxy:** Proxy a Backend local
@@ -154,10 +154,12 @@ git submodule status
 - **Backend Hosting:** Render (Node.js containers)
 - **Frontend Hosting:** Vercel (Edge Network)
 
+> ⚠️ **Nota:** el perfil `production` de `infra/docker-compose.yml` espera un `Dockerfile` de producción en `apps/frontend` que **no existe** (el submódulo frontend solo tiene `Dockerfile.test`, usado por `docker-compose.test.yml`). Por lo tanto, levantar el stack local con `--profile production` (o `make start-prod`) **no funciona actualmente** para el servicio `frontend`. El despliegue real a producción no usa este perfil: se hace vía Render (backend) y Vercel (frontend), como se indica arriba.
+
 ### Testing & CI/CD
-- **Backend Testing:** Jest con cobertura
+- **Backend Testing:** Todavía no tiene una suite de tests automatizada (no usa Jest ni scripts `test`/`test:cov`/`test:watch`); sí cuenta con `pnpm test:sendgrid` para verificación manual de envío de emails
 - **Frontend Testing:** Karma + Jasmine con cobertura
-- **Integración Continua:** GitHub Actions (workflows automáticos)
+- **Integración Continua:** No hay pipelines de test automatizados vigentes en los submódulos (ver sección [CI/CD Automático](#cicd-automático))
 - **Documentación:** Markdown con versionado en repositorios
 
 ---
@@ -400,20 +402,16 @@ curl -X POST http://localhost:3000/auth/login \
 
 ### Backend
 
+El backend **todavía no tiene una suite de tests automatizada** (no usa Jest ni tiene scripts `test`, `test:cov` o `test:watch`). Los scripts reales disponibles son:
+
 ```bash
 cd apps/backend
 
-# Ejecutar todos los tests
-pnpm test
+# Verificación manual de envío de emails (SendGrid)
+pnpm test:sendgrid
 
-# Tests con cobertura
-pnpm test:cov
-
-# Tests en modo watch (escucha cambios)
-pnpm test:watch
-
-# Tests específicos
-pnpm test -- --testPathPattern=auth
+# Verificación de tipos (no es un test funcional, pero valida el build)
+pnpm type-check
 ```
 
 ### Frontend
@@ -425,7 +423,7 @@ cd apps/frontend
 pnpm test
 
 # Tests con cobertura
-pnpm test:cov
+pnpm test:coverage
 
 # Build de producción (valida tipos)
 pnpm build
@@ -437,20 +435,20 @@ pnpm build
 # Backend
 cd apps/backend && pnpm type-check
 
-# Frontend
-cd apps/frontend && pnpm type-check
+# Frontend (no existe script "type-check"; la verificación de tipos ocurre
+# como parte del build de producción)
+cd apps/frontend && pnpm build
 ```
 
 ### CI/CD Automático
 
-El proyecto incluye **workflows automáticos con GitHub Actions**:
+Actualmente **no hay pipelines de test automatizados vigentes**:
 
-- **Backend Tests:** Se ejecutan en cada push/PR al backend
-- **Frontend Tests:** Se ejecutan en cada push/PR al frontend
-- **Integración Completa:** Tests de full-stack cuando hay cambios en ambos
-- **Deploy a Producción:** Automático desde branch principal
+- **Backend:** No tiene carpeta `.github/workflows` (no hay CI configurado).
+- **Frontend:** Solo tiene `.github/workflows/sync.yml`, que sincroniza el submódulo, no ejecuta tests.
+- **Integración Completa / Deploy automático:** No implementado todavía.
 
-Consulta los workflows en: `.github/workflows/` de cada submódulo
+Esto queda como trabajo pendiente; por ahora los tests y la verificación de tipos se ejecutan manualmente con los comandos de esta sección.
 
 ---
 
@@ -702,7 +700,7 @@ cd apps/frontend && pnpm build
 
 # Type checking
 cd apps/backend && pnpm type-check
-cd ../frontend && pnpm type-check
+cd ../frontend && pnpm build   # el frontend no tiene script "type-check"; el build valida los tipos
 ```
 
 ---

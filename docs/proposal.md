@@ -52,3 +52,5 @@ The Garrison System (TGS) es un sistema de ventas y gestion de recursos ambienta
 | *Listados Avanzados* | - Listado de productos con búsqueda y filtrado por tipo (legal/ilegal)<br>- Listado de acuerdos clandestinos con búsqueda avanzada<br>- Listado de sesiones del Consejo Shelby con búsqueda|
 | *Funcionalidades de Búsqueda* | - Búsqueda avanzada de clientes por múltiples criterios<br>- Búsqueda de distribuidores por zona y otros filtros<br>- Búsqueda de autoridades con filtros personalizados<br>- Búsqueda de decisiones estratégicas por socio, tema y estado|
 | *Gestión de Roles y Autenticación* | - Sistema completo de autenticación con JWT<br>- Gestión de roles (Admin, Partner, User)<br>- Verificación de email con códigos de verificación<br>- Modo demo para evaluación sin configuración de email|
+
+> **Nota (posterior a esta propuesta):** el módulo de Notificaciones/Inbox implementado en el frontend fue una ampliación agregada durante el desarrollo y no forma parte del alcance original documentado en esta tabla.
